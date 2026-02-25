@@ -689,6 +689,8 @@ async def get_gantt_data(user: User = Depends(get_current_user)):
     projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
     
     gantt_tasks = []
+    dependencies = []
+    
     for project in projects:
         stages = [
             ("design_stage", "Diseño"),
@@ -698,11 +700,13 @@ async def get_gantt_data(user: User = Depends(get_current_user)):
             ("manufacturing_stage", "Fabricación")
         ]
         
-        for stage_key, stage_name in stages:
+        previous_task_id = None
+        for idx, (stage_key, stage_name) in enumerate(stages):
             stage = project.get(stage_key, {})
             if stage.get("start_date"):
+                task_id = f"{project['project_id']}-{stage_key}"
                 gantt_tasks.append({
-                    "id": f"{project['project_id']}-{stage_key}",
+                    "id": task_id,
                     "project_id": project["project_id"],
                     "project_name": project["name"],
                     "name": f"{project['name']} - {stage_name}",
@@ -710,10 +714,23 @@ async def get_gantt_data(user: User = Depends(get_current_user)):
                     "end": stage.get("end_date", stage["start_date"]),
                     "progress": 100 if stage["status"] == StageStatus.COMPLETED else 50 if stage["status"] == StageStatus.IN_PROGRESS else 0,
                     "status": stage["status"],
-                    "stage": stage_key
+                    "stage": stage_key,
+                    "dependencies": [previous_task_id] if previous_task_id else []
                 })
+                
+                # Add dependency link for frontend visualization
+                if previous_task_id:
+                    dependencies.append({
+                        "from": previous_task_id,
+                        "to": task_id
+                    })
+                
+                previous_task_id = task_id
     
-    return gantt_tasks
+    return {
+        "tasks": gantt_tasks,
+        "dependencies": dependencies
+    }
 
 # ==================== DASHBOARD ROUTES ====================
 
