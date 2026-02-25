@@ -92,9 +92,32 @@ const DashboardLayout = () => {
           <div className="p-4 border-t border-slate-200">
             {sidebarOpen && (
               <div className="mb-3">
-                <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-1">Usuario</div>
-                <div className="text-sm font-medium text-slate-900">{user?.name}</div>
-                <div className="text-xs text-slate-500 capitalize">{user?.role?.replace('_', ' ')}</div>
+                <div className="flex items-center gap-3 mb-2">
+                  {user?.avatar_url ? (
+                    <img
+                      src={`${process.env.REACT_APP_BACKEND_URL}${user.avatar_url}`}
+                      alt={user.name}
+                      className="w-10 h-10 rounded-sm object-cover border border-slate-200"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-sm bg-slate-200 flex items-center justify-center">
+                      <span className="text-slate-600 font-bold text-sm">
+                        {user?.name?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <div className="text-xs font-mono uppercase tracking-widest text-slate-400">Usuario</div>
+                    <div className="text-sm font-medium text-slate-900">{user?.name}</div>
+                    <div className="text-xs text-slate-500 capitalize">{user?.role?.replace('_', ' ')}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="text-xs text-orange-500 hover:text-orange-600 font-medium"
+                >
+                  Ver perfil
+                </button>
               </div>
             )}
             <Button
