@@ -866,7 +866,7 @@ async def approve_study(study_id: str, user: User = Depends(get_current_user)):
 
 @api_router.get("/studies/{study_id}/pdf")
 async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)):
-    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib import colors
     from reportlab.lib.units import inch
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
@@ -884,7 +884,8 @@ async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)
     with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
         pdf_path = tmp_file.name
     
-    doc = SimpleDocTemplate(pdf_path, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    # Use landscape orientation for better Gantt visualization
+    doc = SimpleDocTemplate(pdf_path, pagesize=landscape(A4), topMargin=0.5*inch, bottomMargin=0.5*inch)
     elements = []
     styles = getSampleStyleSheet()
     
