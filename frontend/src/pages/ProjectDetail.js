@@ -349,9 +349,20 @@ const ProjectDetail = () => {
       {/* Documents */}
       <div className="bg-white border border-slate-200 rounded-sm p-5">
         <div className="flex items-center justify-between mb-4">
-          <div className="text-xs font-mono uppercase tracking-widest text-slate-400">Documentos</div>
-          {user?.role === 'designer' && (
-            <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+          <div className="flex items-center gap-3">
+            <div className="text-xs font-mono uppercase tracking-widest text-slate-400">Documentos</div>
+            <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-sm font-mono">
+              {documents.length}/10
+            </span>
+          </div>
+          {user?.role === 'designer' && documents.length < 10 && (
+            <Dialog open={uploadDialogOpen} onOpenChange={(open) => {
+              setUploadDialogOpen(open);
+              if (!open) {
+                setSelectedFiles([]);
+                setUploadProgress({});
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button
                   data-testid="upload-document-button"
@@ -359,14 +370,17 @@ const ProjectDetail = () => {
                   className="rounded-sm px-4 h-9 text-xs font-bold uppercase tracking-wide"
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  Subir Documento
+                  Subir Documentos
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md bg-white">
+              <DialogContent className="sm:max-w-lg bg-white">
                 <DialogHeader>
                   <DialogTitle className="font-heading text-xl uppercase tracking-tight">
-                    Subir Documento
+                    Subir Documentos
                   </DialogTitle>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Puedes subir hasta {10 - documents.length} archivos más
+                  </p>
                 </DialogHeader>
                 
                 {/* Upload Type Selector */}
@@ -420,17 +434,82 @@ const ProjectDetail = () => {
 
                   <div
                     {...getRootProps()}
-                    className={`border-2 border-dashed rounded-sm p-8 text-center cursor-pointer transition-colors ${
+                    className={`border-2 border-dashed rounded-sm p-6 text-center cursor-pointer transition-colors ${
                       isDragActive ? 'border-orange-500 bg-orange-50' : 'border-slate-300 hover:border-slate-400'
                     }`}
                   >
                     <input {...getInputProps()} />
-                    <Upload className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+                    <Upload className="w-10 h-10 mx-auto mb-3 text-slate-400" />
                     <p className="text-sm text-slate-600 mb-1">
-                      {isDragActive ? 'Suelta el archivo aquí' : 'Arrastra un archivo o haz clic para seleccionar'}
+                      {isDragActive ? 'Suelta los archivos aquí' : 'Arrastra archivos o haz clic para seleccionar'}
                     </p>
-                    <p className="text-xs text-slate-400">PDF o Excel</p>
+                    <p className="text-xs text-slate-400">PDF o Excel (máx. {10 - documents.length} archivos)</p>
                   </div>
+
+                  {/* Selected Files List */}
+                  {selectedFiles.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Archivos seleccionados ({selectedFiles.length})
+                      </div>
+                      <div className="max-h-40 overflow-y-auto space-y-1">
+                        {selectedFiles.map((file, index) => (
+                          <div 
+                            key={index}
+                            className="flex items-center justify-between p-2 bg-slate-50 rounded-sm"
+                          >
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                              <span className="text-sm text-slate-700 truncate">{file.name}</span>
+                              <span className="text-xs text-slate-400 flex-shrink-0">
+                                ({(file.size / 1024).toFixed(1)} KB)
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {uploadProgress[index] === 'uploading' && (
+                                <Loader2 className="w-4 h-4 text-orange-500 animate-spin" />
+                              )}
+                              {uploadProgress[index] === 'success' && (
+                                <CheckCircle className="w-4 h-4 text-green-500" />
+                              )}
+                              {uploadProgress[index] === 'error' && (
+                                <X className="w-4 h-4 text-red-500" />
+                              )}
+                              {!uploading && (
+                                <button
+                                  onClick={() => removeSelectedFile(index)}
+                                  className="p-1 hover:bg-slate-200 rounded-sm transition-colors"
+                                >
+                                  <X className="w-4 h-4 text-slate-400" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  {selectedFiles.length > 0 && (
+                    <Button
+                      onClick={uploadAllFiles}
+                      disabled={uploading}
+                      className="w-full bg-slate-900 text-white hover:bg-slate-800 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs transition-all active:scale-95 disabled:opacity-50"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Subiendo...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          Subir {selectedFiles.length} Archivo{selectedFiles.length > 1 ? 's' : ''}
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </DialogContent>
             </Dialog>
