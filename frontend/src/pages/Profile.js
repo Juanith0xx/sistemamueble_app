@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, User } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Upload, User, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
@@ -12,6 +14,12 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const Profile = () => {
   const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    role: user?.role || ''
+  });
 
   const onDrop = async (acceptedFiles) => {
     const file = acceptedFiles[0];
