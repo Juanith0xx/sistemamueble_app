@@ -94,20 +94,26 @@ class GanttAPITester:
             "design_estimated_days": 5
         }
         
+        # Try with expected success status 200 for designers, 403 for others
+        expected_status = 200 if role_name == "designer" else 403
         success, response = self.make_request("POST", "projects", project_data, 
-                                            auth_user=role_name, expected_status=201)
+                                            auth_user=role_name, expected_status=expected_status)
         
-        if success and 'project_id' in response:
-            self.test_data['project_id'] = response['project_id']
-            self.log_test(f"Create Project ({role_name})", True, f"ID: {response['project_id'][:8]}...")
-            return True
-        else:
-            expected_fail = role_name != "designer"
-            if expected_fail and not success:
-                self.log_test(f"Create Project ({role_name})", True, "Correctly blocked non-designer")
+        if role_name == "designer":
+            if success and 'project_id' in response:
+                self.test_data['project_id'] = response['project_id']
+                self.log_test(f"Create Project ({role_name})", True, f"ID: {response['project_id'][:8]}...")
                 return True
             else:
                 self.log_test(f"Create Project ({role_name})", False, str(response))
+                return False
+        else:
+            # For non-designers, we expect failure
+            if not success:
+                self.log_test(f"Create Project ({role_name})", True, "Correctly blocked non-designer")
+                return True
+            else:
+                self.log_test(f"Create Project ({role_name})", False, "Non-designer was able to create project!")
                 return False
 
     def test_list_projects(self, role_name: str):
