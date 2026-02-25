@@ -79,19 +79,19 @@ class StageStatus:
     DELAYED = "delayed"
 
 class UserRegister(BaseModel):
-    email: EmailStr
+    email: str
     password: str
     name: str
     role: str
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
     user_id: str
-    email: EmailStr
+    email: str
     name: str
     role: str
     created_at: str
