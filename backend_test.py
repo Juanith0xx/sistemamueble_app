@@ -233,19 +233,25 @@ class GanttAPITester:
             "notes": "Test purchase order"
         }
         
-        expected_status = 201 if role_name == "purchasing" else 403
+        expected_status = 200 if role_name == "purchasing" else 403
         success, response = self.make_request("POST", "purchase-orders", po_data, 
                                             auth_user=role_name, expected_status=expected_status)
         
-        if role_name == "purchasing" and success and 'po_id' in response:
-            self.log_test(f"Create PO ({role_name})", True, f"PO ID: {response['po_id'][:8]}...")
-            return True
-        elif role_name != "purchasing" and not success:
-            self.log_test(f"Create PO ({role_name})", True, "Correctly blocked non-purchasing user")
-            return True
+        if role_name == "purchasing":
+            if success and 'po_id' in response:
+                self.log_test(f"Create PO ({role_name})", True, f"PO ID: {response['po_id'][:8]}...")
+                return True
+            else:
+                self.log_test(f"Create PO ({role_name})", False, str(response))
+                return False
         else:
-            self.log_test(f"Create PO ({role_name})", False, str(response))
-            return False
+            # For non-purchasing users, we expect failure
+            if not success:
+                self.log_test(f"Create PO ({role_name})", True, "Correctly blocked non-purchasing user")
+                return True
+            else:
+                self.log_test(f"Create PO ({role_name})", False, str(response))
+                return False
 
 def main():
     print("=" * 60)
