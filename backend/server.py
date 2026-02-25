@@ -638,6 +638,133 @@ async def confirm_materials_received(project_id: str, user: User = Depends(get_c
     updated_project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
     return Project(**updated_project)
 
+@api_router.post("/projects/{project_id}/complete-early")
+async def complete_stage_early(project_id: str, user: User = Depends(get_current_user)):
+    """Permite completar la etapa actual antes del plazo y ganar estrellas"""
+    project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    
+    current_status = project["status"]
+    
+    # Verificar permisos según etapa actual
+    stage_permissions = {
+        "design": UserRole.DESIGNER,
+        "validation": UserRole.MANUFACTURING_CHIEF,
+        "purchasing": UserRole.PURCHASING,
+        "warehouse": UserRole.WAREHOUSE,
+        "manufacturing": UserRole.DESIGNER
+    }
+    
+    if current_status not in stage_permissions:
+        raise HTTPException(status_code=400, detail="El proyecto no está en una etapa que se pueda completar")
+    
+    if user.role != stage_permissions[current_status] and user.role != UserRole.SUPERADMIN:
+        raise HTTPException(status_code=403, detail="No tienes permiso para completar esta etapa")
+    
+    stage_key = f"{current_status}_stage"
+    current_stage = project.get(stage_key, {})
+    
+    if not current_stage.get("end_date"):
+        raise HTTPException(status_code=400, detail="Esta etapa no tiene fecha de fin definida")
+    
+    # Verificar si es antes del plazo
+    end_date = datetime.fromisoformat(current_stage["end_date"])
+    now = datetime.now(timezone.utc)
+    
+    stars_earned = 0
+    is_early = now < end_date
+    days_early = (end_date - now).days if is_early else 0
+    
+    if is_early:
+        # Calcular estrellas según días de anticipación
+        if days_early >= 5:
+            stars_earned = 3
+        elif days_early >= 2:
+            stars_earned = 2
+        else:
+            stars_earned = 1
+        
+        # Agregar estrellas al usuario
+        await db.users.update_one(
+            {"user_id": user.user_id},
+            {"$inc": {"stars": stars_earned}}
+        )
+    
+    # Marcar etapa como completada
+    updates = {
+        f"{stage_key}.status": StageStatus.COMPLETED,
+        f"{stage_key}.end_date": now.isoformat(),
+        f"{stage_key}.actual_days": (now - datetime.fromisoformat(current_stage["start_date"])).days,
+        f"{stage_key}.completed_early": is_early,
+        f"{stage_key}.days_early": days_early,
+        "updated_at": now.isoformat()
+    }
+    
+    # Si es la última etapa (manufacturing), completar el proyecto
+    if current_status == ProjectStatus.MANUFACTURING:
+        updates["status"] = ProjectStatus.COMPLETED
+        updates["completed_at"] = now.isoformat()
+        updates["completed_early"] = is_early
+        
+        # Notificar al admin
+        admins = await db.users.find({"role": UserRole.SUPERADMIN}, {"_id": 0}).to_list(100)
+        for admin in admins:
+            await create_notification(
+                admin["user_id"],
+                project_id,
+                f"🎉 El proyecto '{project['name']}' ha sido completado" + 
+                (f" con {days_early} días de anticipación! El usuario ganó {stars_earned} ⭐" if is_early else ".")
+            )
+    else:
+        # Avanzar a la siguiente etapa
+        stage_map = {
+            "design": ("validation", UserRole.MANUFACTURING_CHIEF),
+            "validation": ("purchasing", UserRole.PURCHASING),
+            "purchasing": ("warehouse", UserRole.WAREHOUSE),
+            "warehouse": ("manufacturing", UserRole.DESIGNER)
+        }
+        
+        next_status, next_role = stage_map[current_status]
+        next_stage_key = f"{next_status}_stage"
+        
+        updates["status"] = next_status
+        updates[f"{next_stage_key}.start_date"] = now.isoformat()
+        updates[f"{next_stage_key}.status"] = StageStatus.IN_PROGRESS
+        updates[f"{next_stage_key}.estimated_days"] = 0
+        
+        # Notificar al siguiente usuario
+        next_users = await db.users.find({"role": next_role}, {"_id": 0}).to_list(100)
+        for next_user in next_users:
+            await create_notification(
+                next_user["user_id"],
+                project_id,
+                f"El proyecto '{project['name']}' avanzó a tu etapa" +
+                (f" (completado {days_early} días antes!)" if is_early else ".")
+            )
+        
+        # Notificar al admin si fue antes del plazo
+        if is_early:
+            admins = await db.users.find({"role": UserRole.SUPERADMIN}, {"_id": 0}).to_list(100)
+            for admin in admins:
+                await create_notification(
+                    admin["user_id"],
+                    project_id,
+                    f"⭐ {user.name} completó la etapa '{current_status}' del proyecto '{project['name']}' con {days_early} días de anticipación! Ganó {stars_earned} estrellas."
+                )
+    
+    await db.projects.update_one({"project_id": project_id}, {"$set": updates})
+    
+    updated_project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
+    
+    return {
+        "project": Project(**updated_project),
+        "stars_earned": stars_earned,
+        "days_early": days_early,
+        "is_early": is_early,
+        "message": f"¡Felicidades! Completaste {days_early} días antes y ganaste {stars_earned} ⭐" if is_early else "Etapa completada"
+    }
+
 # ==================== DOCUMENT ROUTES ====================
 
 @api_router.post("/documents/upload")
