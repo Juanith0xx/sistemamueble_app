@@ -479,6 +479,26 @@ async def advance_project_stage(project_id: str, estimated_days: int, user: User
                 detail="Debe subir el listado de materiales (Excel) antes de avanzar a la siguiente etapa"
             )
     
+    # Verificar si se requiere orden de compra antes de avanzar desde compras
+    if current_status == ProjectStatus.PURCHASING:
+        purchase_order = await db.documents.find_one({
+            "project_id": project_id,
+            "document_type": "purchase_order"
+        })
+        if not purchase_order:
+            raise HTTPException(
+                status_code=400, 
+                detail="Debe subir la Orden de Compra (OC) antes de avanzar a la siguiente etapa"
+            )
+    
+    # Verificar si se confirmó recepción de materiales antes de avanzar desde bodega
+    if current_status == ProjectStatus.WAREHOUSE:
+        if not project.get("warehouse_stage", {}).get("materials_confirmed", False):
+            raise HTTPException(
+                status_code=400, 
+                detail="Debe confirmar que todos los materiales están listos antes de avanzar a fabricación"
+            )
+    
     updates = {"updated_at": datetime.now(timezone.utc).isoformat()}
     
     stage_map = {
