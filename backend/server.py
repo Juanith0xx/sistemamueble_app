@@ -665,31 +665,34 @@ async def complete_stage_early(project_id: str, user: User = Depends(get_current
     stage_key = f"{current_status}_stage"
     current_stage = project.get(stage_key, {})
     
-    if not current_stage.get("end_date"):
-        raise HTTPException(status_code=400, detail="Esta etapa no tiene fecha de fin definida")
+    if not current_stage.get("start_date"):
+        raise HTTPException(status_code=400, detail="Esta etapa aún no ha iniciado")
     
-    # Verificar si es antes del plazo
-    end_date = datetime.fromisoformat(current_stage["end_date"])
     now = datetime.now(timezone.utc)
-    
     stars_earned = 0
-    is_early = now < end_date
-    days_early = (end_date - now).days if is_early else 0
+    is_early = False
+    days_early = 0
     
-    if is_early:
-        # Calcular estrellas según días de anticipación
-        if days_early >= 5:
-            stars_earned = 3
-        elif days_early >= 2:
-            stars_earned = 2
-        else:
-            stars_earned = 1
+    # Solo calcular estrellas si hay fecha de fin definida
+    if current_stage.get("end_date"):
+        end_date = datetime.fromisoformat(current_stage["end_date"])
+        is_early = now < end_date
+        days_early = (end_date - now).days if is_early else 0
         
-        # Agregar estrellas al usuario
-        await db.users.update_one(
-            {"user_id": user.user_id},
-            {"$inc": {"stars": stars_earned}}
-        )
+        if is_early:
+            # Calcular estrellas según días de anticipación
+            if days_early >= 5:
+                stars_earned = 3
+            elif days_early >= 2:
+                stars_earned = 2
+            else:
+                stars_earned = 1
+            
+            # Agregar estrellas al usuario
+            await db.users.update_one(
+                {"user_id": user.user_id},
+                {"$inc": {"stars": stars_earned}}
+            )
     
     # Marcar etapa como completada
     updates = {
