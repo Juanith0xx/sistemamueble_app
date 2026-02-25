@@ -749,20 +749,16 @@ async def update_stage_estimate(
     if not study:
         raise HTTPException(status_code=404, detail="Estudio no encontrado")
     
-    # Validate stage permissions
-    stage_permissions = {
-        "design": [UserRole.DESIGNER],
-        "validation": [UserRole.MANUFACTURING_CHIEF],
-        "purchasing": [UserRole.PURCHASING],
-        "warehouse": [UserRole.PURCHASING, UserRole.WAREHOUSE],  # Compras también puede editar
-        "manufacturing": [UserRole.DESIGNER]
-    }
+    # En estudios de proyectos (simulaciones), todos los usuarios pueden 
+    # editar todas las etapas para hacer estimaciones colaborativas
+    allowed_roles = [UserRole.DESIGNER, UserRole.MANUFACTURING_CHIEF, UserRole.PURCHASING, UserRole.WAREHOUSE, UserRole.SUPERADMIN]
+    valid_stages = ["design", "validation", "purchasing", "warehouse", "manufacturing"]
     
-    if stage not in stage_permissions:
+    if stage not in valid_stages:
         raise HTTPException(status_code=400, detail="Etapa inválida")
     
-    if user.role != UserRole.SUPERADMIN and user.role not in stage_permissions[stage]:
-        raise HTTPException(status_code=403, detail="No tienes permiso para estimar esta etapa")
+    if user.role not in allowed_roles:
+        raise HTTPException(status_code=403, detail="No tienes permiso para estimar etapas")
     
     stage_key = f"{stage}_stage"
     now = datetime.now(timezone.utc).isoformat()
