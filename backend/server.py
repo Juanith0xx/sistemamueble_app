@@ -460,7 +460,7 @@ async def get_project(project_id: str, user: User = Depends(get_current_user)):
     return Project(**project)
 
 @api_router.post("/projects/{project_id}/advance-stage")
-async def advance_project_stage(project_id: str, estimated_days: int, user: User = Depends(get_current_user)):
+async def advance_project_stage(project_id: str, user: User = Depends(get_current_user)):
     project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
