@@ -42,6 +42,17 @@ const Profile = () => {
     }
   };
 
+  const handleSaveProfile = async () => {
+    try {
+      await axios.put(`${API}/users/me`, formData);
+      toast.success('Perfil actualizado exitosamente');
+      setEditing(false);
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al actualizar perfil');
+    }
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
