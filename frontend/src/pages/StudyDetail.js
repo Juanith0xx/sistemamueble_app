@@ -82,9 +82,24 @@ const StudyDetail = () => {
 
   const handleExportPDF = async () => {
     try {
-      window.open(`${API}/studies/${id}/pdf`, '_blank');
-      toast.success('Descargando PDF...');
+      toast.info('Generando PDF...');
+      const response = await axios.get(`${API}/studies/${id}/pdf`, {
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `estudio_${study.name.replace(/\s+/g, '_')}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('PDF descargado exitosamente');
     } catch (error) {
+      console.error('Error exporting PDF:', error);
       toast.error('Error al exportar PDF');
     }
   };
