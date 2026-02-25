@@ -50,8 +50,7 @@ const Register = () => {
         <div className="absolute inset-0 bg-slate-900/70" />
         <div className="relative z-10 flex flex-col justify-center px-12 text-white">
           <div className="mb-6">
-            <img src="/robfu-logo.png" alt="Robfu" className="h-20 mb-4" />
-            <h1 className="font-heading text-5xl font-bold uppercase tracking-tight">Gantt Pro</h1>
+            <img src="/robfu-logo.png" alt="Robfu" className="h-24 mb-6" />
           </div>
           <p className="text-xl text-slate-300 font-medium leading-relaxed">
             Únete al sistema de control más eficiente para la industria del mueble.
