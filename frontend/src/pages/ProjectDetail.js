@@ -208,6 +208,49 @@ const ProjectDetail = () => {
     }
   };
 
+  // Verificar si existe la orden de compra
+  const getPurchaseOrder = () => {
+    return documents.find(doc => doc.document_type === 'purchase_order');
+  };
+
+  // Subir orden de compra
+  const handleUploadPurchaseOrder = async (file) => {
+    if (!file) return;
+
+    setUploadingPO(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await axios.post(
+        `${API}/documents/upload-local?project_id=${id}&stage=${project.status}&document_type=purchase_order`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      toast.success('Orden de Compra subida exitosamente');
+      setPurchaseOrderFile(null);
+      fetchProjectData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al subir Orden de Compra');
+    } finally {
+      setUploadingPO(false);
+    }
+  };
+
+  // Confirmar materiales listos (bodega)
+  const handleConfirmMaterials = async () => {
+    setConfirmingMaterials(true);
+    try {
+      await axios.post(`${API}/projects/${id}/confirm-materials`);
+      toast.success('Materiales confirmados como listos para fabricación');
+      fetchProjectData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al confirmar materiales');
+    } finally {
+      setConfirmingMaterials(false);
+    }
+  };
+
   const canAdvanceStage = () => {
     if (!user || !project) return false;
     
