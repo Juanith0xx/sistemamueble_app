@@ -10,6 +10,7 @@ import ProjectDetail from '@/pages/ProjectDetail';
 import GanttView from '@/pages/GanttView';
 import PurchaseOrders from '@/pages/PurchaseOrders';
 import AdminPanel from '@/pages/AdminPanel';
+import Profile from '@/pages/Profile';
 import DashboardLayout from '@/components/DashboardLayout';
 import '@/App.css';
 
