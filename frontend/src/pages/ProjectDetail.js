@@ -36,6 +36,8 @@ const ProjectDetail = () => {
   const [uploadingPO, setUploadingPO] = useState(false);
   const [confirmingMaterials, setConfirmingMaterials] = useState(false);
   const [estimateDialogOpen, setEstimateDialogOpen] = useState(false);
+  const [completingEarly, setCompletingEarly] = useState(false);
+  const [earlyCompleteDialogOpen, setEarlyCompleteDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchProjectData();
