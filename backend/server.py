@@ -667,6 +667,330 @@ async def get_project_documents(project_id: str, user: User = Depends(get_curren
     documents = await db.documents.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
     return documents
 
+# ==================== PROJECT STUDY ROUTES ====================
+
+@api_router.post("/studies", response_model=ProjectStudy)
+async def create_study(study_input: ProjectStudyCreate, user: User = Depends(get_current_user)):
+    study_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    study_doc = {
+        "study_id": study_id,
+        "name": study_input.name,
+        "description": study_input.description,
+        "client_name": study_input.client_name,
+        "created_by": user.user_id,
+        "status": "draft",
+        "design_stage": {
+            "estimated_days": 0,
+            "estimated_by": None,
+            "estimated_at": None,
+            "notes": None
+        },
+        "validation_stage": {
+            "estimated_days": 0,
+            "estimated_by": None,
+            "estimated_at": None,
+            "notes": None
+        },
+        "purchasing_stage": {
+            "estimated_days": 0,
+            "estimated_by": None,
+            "estimated_at": None,
+            "notes": None
+        },
+        "warehouse_stage": {
+            "estimated_days": 0,
+            "estimated_by": None,
+            "estimated_at": None,
+            "notes": None
+        },
+        "manufacturing_stage": {
+            "estimated_days": 0,
+            "estimated_by": None,
+            "estimated_at": None,
+            "notes": None
+        },
+        "total_estimated_days": 0,
+        "estimated_start_date": None,
+        "estimated_end_date": None,
+        "started_project_id": None,
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.studies.insert_one(study_doc)
+    study_doc.pop("_id", None)
+    
+    return ProjectStudy(**study_doc)
+
+@api_router.get("/studies", response_model=List[ProjectStudy])
+async def get_studies(user: User = Depends(get_current_user)):
+    query = {}
+    if user.role != UserRole.SUPERADMIN:
+        query["created_by"] = user.user_id
+    
+    studies = await db.studies.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return [ProjectStudy(**s) for s in studies]
+
+@api_router.get("/studies/{study_id}", response_model=ProjectStudy)
+async def get_study(study_id: str, user: User = Depends(get_current_user)):
+    study = await db.studies.find_one({"study_id": study_id}, {"_id": 0})
+    if not study:
+        raise HTTPException(status_code=404, detail="Estudio no encontrado")
+    return ProjectStudy(**study)
+
+@api_router.put("/studies/{study_id}/estimate/{stage}")
+async def update_stage_estimate(
+    study_id: str, 
+    stage: str, 
+    estimate: StageEstimateUpdate,
+    user: User = Depends(get_current_user)
+):
+    study = await db.studies.find_one({"study_id": study_id}, {"_id": 0})
+    if not study:
+        raise HTTPException(status_code=404, detail="Estudio no encontrado")
+    
+    # Validate stage permissions
+    stage_permissions = {
+        "design": UserRole.DESIGNER,
+        "validation": UserRole.MANUFACTURING_CHIEF,
+        "purchasing": UserRole.PURCHASING,
+        "warehouse": UserRole.WAREHOUSE,
+        "manufacturing": UserRole.DESIGNER
+    }
+    
+    if stage not in stage_permissions:
+        raise HTTPException(status_code=400, detail="Etapa inválida")
+    
+    if user.role != UserRole.SUPERADMIN and user.role != stage_permissions[stage]:
+        raise HTTPException(status_code=403, detail="No tienes permiso para estimar esta etapa")
+    
+    stage_key = f"{stage}_stage"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Update stage estimate
+    update_data = {
+        f"{stage_key}.estimated_days": estimate.estimated_days,
+        f"{stage_key}.estimated_by": user.user_id,
+        f"{stage_key}.estimated_at": now,
+        f"{stage_key}.notes": estimate.notes,
+        "updated_at": now
+    }
+    
+    await db.studies.update_one({"study_id": study_id}, {"$set": update_data})
+    
+    # Recalculate total
+    updated_study = await db.studies.find_one({"study_id": study_id}, {"_id": 0})
+    total_days = sum([
+        updated_study["design_stage"]["estimated_days"],
+        updated_study["validation_stage"]["estimated_days"],
+        updated_study["purchasing_stage"]["estimated_days"],
+        updated_study["warehouse_stage"]["estimated_days"],
+        updated_study["manufacturing_stage"]["estimated_days"]
+    ])
+    
+    # Calculate dates if all estimates are provided
+    if total_days > 0:
+        start_date = datetime.now(timezone.utc)
+        end_date = start_date + timedelta(days=total_days)
+        
+        await db.studies.update_one(
+            {"study_id": study_id},
+            {"$set": {
+                "total_estimated_days": total_days,
+                "estimated_start_date": start_date.isoformat(),
+                "estimated_end_date": end_date.isoformat()
+            }}
+        )
+    
+    final_study = await db.studies.find_one({"study_id": study_id}, {"_id": 0})
+    return ProjectStudy(**final_study)
+
+@api_router.post("/studies/{study_id}/approve")
+async def approve_study(study_id: str, user: User = Depends(get_current_user)):
+    study = await db.studies.find_one({"study_id": study_id}, {"_id": 0})
+    if not study:
+        raise HTTPException(status_code=404, detail="Estudio no encontrado")
+    
+    if user.role != UserRole.SUPERADMIN and user.user_id != study["created_by"]:
+        raise HTTPException(status_code=403, detail="No tienes permiso para aprobar este estudio")
+    
+    # Create real project from study
+    project_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc)
+    
+    design_days = study["design_stage"]["estimated_days"]
+    if design_days == 0:
+        raise HTTPException(status_code=400, detail="Debe tener al menos estimación de diseño")
+    
+    design_start = now
+    design_end = design_start + timedelta(days=design_days)
+    
+    project_doc = {
+        "project_id": project_id,
+        "name": study["name"],
+        "description": study["description"],
+        "client_name": study["client_name"],
+        "created_by": study["created_by"],
+        "status": ProjectStatus.DESIGN,
+        "design_stage": {
+            "estimated_days": design_days,
+            "actual_days": 0,
+            "start_date": design_start.isoformat(),
+            "end_date": design_end.isoformat(),
+            "responsible_user_id": study["created_by"],
+            "status": StageStatus.IN_PROGRESS
+        },
+        "validation_stage": {"estimated_days": study["validation_stage"]["estimated_days"], "actual_days": 0, "status": StageStatus.PENDING},
+        "purchasing_stage": {"estimated_days": study["purchasing_stage"]["estimated_days"], "actual_days": 0, "status": StageStatus.PENDING},
+        "warehouse_stage": {"estimated_days": study["warehouse_stage"]["estimated_days"], "actual_days": 0, "status": StageStatus.PENDING},
+        "manufacturing_stage": {"estimated_days": study["manufacturing_stage"]["estimated_days"], "actual_days": 0, "status": StageStatus.PENDING},
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat()
+    }
+    
+    await db.projects.insert_one(project_doc)
+    
+    # Update study status
+    await db.studies.update_one(
+        {"study_id": study_id},
+        {"$set": {
+            "status": "approved",
+            "started_project_id": project_id,
+            "updated_at": now.isoformat()
+        }}
+    )
+    
+    return {"project_id": project_id, "message": "Estudio aprobado y proyecto creado"}
+
+@api_router.get("/studies/{study_id}/pdf")
+async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)):
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from io import BytesIO
+    
+    study = await db.studies.find_one({"study_id": study_id}, {"_id": 0})
+    if not study:
+        raise HTTPException(status_code=404, detail="Estudio no encontrado")
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Title
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#1e293b'),
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    elements.append(Paragraph("ESTUDIO DE PROYECTO", title_style))
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Project Info
+    info_data = [
+        ["Proyecto:", study["name"]],
+        ["Cliente:", study["client_name"]],
+        ["Descripción:", study["description"]],
+        ["Duración Total:", f"{study['total_estimated_days']} días"],
+        ["Fecha Estimada Inicio:", study["estimated_start_date"][:10] if study.get("estimated_start_date") else "Por definir"],
+        ["Fecha Estimada Fin:", study["estimated_end_date"][:10] if study.get("estimated_end_date") else "Por definir"],
+    ]
+    
+    info_table = Table(info_data, colWidths=[2*inch, 4.5*inch])
+    info_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f1f5f9')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#1e293b')),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('TOPPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1'))
+    ]))
+    
+    elements.append(info_table)
+    elements.append(Spacer(1, 0.4*inch))
+    
+    # Stages Timeline
+    elements.append(Paragraph("CRONOGRAMA ESTIMADO POR ETAPAS", styles['Heading2']))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    stages_data = [
+        ["Etapa", "Días Estimados", "Notas", "Estimado Por"]
+    ]
+    
+    stage_names = {
+        "design_stage": "Diseño",
+        "validation_stage": "Validación Técnica",
+        "purchasing_stage": "Compras",
+        "warehouse_stage": "Bodega / Recepción",
+        "manufacturing_stage": "Fabricación"
+    }
+    
+    for stage_key, stage_label in stage_names.items():
+        stage_data = study[stage_key]
+        estimated_by = "Pendiente"
+        if stage_data.get("estimated_by"):
+            user_doc = await db.users.find_one({"user_id": stage_data["estimated_by"]}, {"_id": 0, "name": 1})
+            estimated_by = user_doc["name"] if user_doc else "Usuario"
+        
+        stages_data.append([
+            stage_label,
+            f"{stage_data['estimated_days']} días",
+            stage_data.get("notes") or "-",
+            estimated_by
+        ])
+    
+    stages_table = Table(stages_data, colWidths=[1.8*inch, 1.2*inch, 2.2*inch, 1.3*inch])
+    stages_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f97316')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
+    ]))
+    
+    elements.append(stages_table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Footer
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.HexColor('#64748b'),
+        alignment=TA_CENTER
+    )
+    elements.append(Spacer(1, 0.5*inch))
+    elements.append(Paragraph(f"Generado el {datetime.now(timezone.utc).strftime('%d/%m/%Y %H:%M')}", footer_style))
+    elements.append(Paragraph("Sistema Robfu - Gestión de Producción Industrial", footer_style))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    return FileResponse(
+        path=buffer,
+        media_type="application/pdf",
+        filename=f"estudio_{study['name'].replace(' ', '_')}.pdf",
+        headers={"Content-Disposition": f"attachment; filename=estudio_{study['name'].replace(' ', '_')}.pdf"}
+    )
+
 # ==================== PURCHASE ORDER ROUTES ====================
 
 @api_router.post("/purchase-orders", response_model=PurchaseOrder)
