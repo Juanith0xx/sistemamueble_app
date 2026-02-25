@@ -466,6 +466,19 @@ async def advance_project_stage(project_id: str, estimated_days: int, user: User
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
     
     current_status = project["status"]
+    
+    # Verificar si se requiere listado de materiales antes de avanzar desde validación
+    if current_status == ProjectStatus.VALIDATION:
+        materials_list = await db.documents.find_one({
+            "project_id": project_id,
+            "document_type": "materials_list"
+        })
+        if not materials_list:
+            raise HTTPException(
+                status_code=400, 
+                detail="Debe subir el listado de materiales (Excel) antes de avanzar a la siguiente etapa"
+            )
+    
     updates = {"updated_at": datetime.now(timezone.utc).isoformat()}
     
     stage_map = {
