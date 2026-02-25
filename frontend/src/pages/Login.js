@@ -34,16 +34,16 @@ const Login = () => {
     <div className="min-h-screen flex">
       <div 
         className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative"
-        style={{ backgroundImage: `url('https://images.unsplash.com/photo-1570619511366-24c19247c731?crop=entropy&cs=srgb&fm=jpg&q=85')` }}
+        style={{ backgroundImage: `url('/factory-bg.jpg')` }}
       >
-        <div className="absolute inset-0 bg-slate-900/70" />
+        <div className="absolute inset-0 bg-slate-900/60" />
         <div className="relative z-10 flex flex-col justify-center px-12 text-white">
-          <div className="mb-6">
-            <img src="/robfu-logo.png" alt="Robfu" className="h-24 mb-6" />
+          <div className="mb-6 bg-white rounded-lg p-4 inline-block w-fit">
+            <img src="/robfu-logo.png" alt="Robfu" className="h-20" />
           </div>
-          <p className="text-xl text-slate-300 font-medium leading-relaxed">
+          <p className="text-xl text-slate-200 font-medium leading-relaxed">
             Sistema de control industrial para fábricas de muebles.
-            <br />Optimiza tu producción con gestión en tiempo real.
+            <br />Optimiza tu producción con gestión en tiempo real. 🏭
           </p>
         </div>
       </div>
