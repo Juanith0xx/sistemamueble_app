@@ -94,6 +94,7 @@ class User(BaseModel):
     email: str
     name: str
     role: str
+    avatar_url: Optional[str] = None
     created_at: str
 
 class Token(BaseModel):
