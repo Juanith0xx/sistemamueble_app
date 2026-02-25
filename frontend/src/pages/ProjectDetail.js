@@ -1070,7 +1070,7 @@ const ProjectDetail = () => {
                 <Button
                   onClick={() => {
                     if (doc.storage_type === 'local') {
-                      window.open(`${API}/documents/download/${doc.document_id}`, '_blank');
+                      handleDownloadFile(doc.document_id, doc.filename);
                     } else {
                       window.open(doc.drive_url, '_blank');
                     }
