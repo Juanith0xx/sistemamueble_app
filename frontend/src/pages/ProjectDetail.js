@@ -466,6 +466,59 @@ const ProjectDetail = () => {
             </DialogContent>
           </Dialog>
         )}
+
+        {/* Complete Early Button */}
+        {canCompleteEarly() && getDaysRemaining() !== null && (
+          <Dialog open={earlyCompleteDialogOpen} onOpenChange={setEarlyCompleteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                data-testid="complete-early-button"
+                className={`${getDaysRemaining() > 0 ? 'bg-green-500 hover:bg-green-600' : 'bg-slate-500 hover:bg-slate-600'} text-white rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs shadow-sm hover:shadow-md transition-all active:scale-95`}
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {getDaysRemaining() > 0 ? `Completar (${getDaysRemaining()} días antes)` : 'Completar Etapa'}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md bg-white">
+              <DialogHeader>
+                <DialogTitle className="font-heading text-xl uppercase tracking-tight">
+                  {getDaysRemaining() > 0 ? '🎉 ¡Completar Antes del Plazo!' : 'Completar Etapa'}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {getDaysRemaining() > 0 ? (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-sm">
+                    <p className="text-sm text-green-800 mb-2">
+                      <strong>¡Excelente trabajo!</strong> Estás a punto de completar esta etapa con <strong>{getDaysRemaining()} días de anticipación</strong>.
+                    </p>
+                    <p className="text-sm text-green-700">
+                      Ganarás estrellas de recompensa:
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-2xl">
+                        {getDaysRemaining() >= 5 ? '⭐⭐⭐' : getDaysRemaining() >= 2 ? '⭐⭐' : '⭐'}
+                      </span>
+                      <span className="text-sm text-green-600">
+                        ({getDaysRemaining() >= 5 ? '3 estrellas' : getDaysRemaining() >= 2 ? '2 estrellas' : '1 estrella'})
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-600">
+                    ¿Estás seguro de completar esta etapa?
+                  </p>
+                )}
+                <Button
+                  onClick={handleCompleteEarly}
+                  disabled={completingEarly}
+                  className="w-full bg-green-600 text-white hover:bg-green-700 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs transition-all active:scale-95"
+                >
+                  {completingEarly ? 'Completando...' : 'Confirmar y Completar'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* Progress Bar */}
