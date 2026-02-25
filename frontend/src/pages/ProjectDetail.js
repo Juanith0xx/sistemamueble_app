@@ -67,17 +67,21 @@ const ProjectDetail = () => {
   };
 
   const onDrop = async (acceptedFiles) => {
-    if (!driveConnected) {
-      toast.error('Primero debes conectar Google Drive');
-      return;
-    }
-
     const file = acceptedFiles[0];
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      await axios.post(`${API}/documents/upload?project_id=${id}&stage=${project.status}`, formData, {
+      const endpoint = uploadType === 'local' 
+        ? `${API}/documents/upload-local?project_id=${id}&stage=${project.status}`
+        : `${API}/documents/upload?project_id=${id}&stage=${project.status}`;
+      
+      if (uploadType === 'drive' && !driveConnected) {
+        toast.error('Primero debes conectar Google Drive');
+        return;
+      }
+      
+      await axios.post(endpoint, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       toast.success('Archivo subido exitosamente');
