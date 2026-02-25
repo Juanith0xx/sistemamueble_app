@@ -192,19 +192,26 @@ class GanttAPITester:
 
     def test_admin_kpis(self, role_name: str):
         """Test KPIs endpoint (superadmin only)"""
+        expected_status = 200 if role_name == "admin" else 403
         success, response = self.make_request("GET", "dashboard/kpis", auth_user=role_name, 
-                                            expected_status=200 if role_name == "admin" else 403)
+                                            expected_status=expected_status)
         
-        if role_name == "admin" and success and 'total_projects' in response:
-            self.log_test(f"Admin KPIs ({role_name})", True, 
-                         f"Total: {response.get('total_projects', 0)}, Active: {response.get('active_projects', 0)}")
-            return True
-        elif role_name != "admin" and not success:
-            self.log_test(f"Admin KPIs ({role_name})", True, "Correctly blocked non-admin")
-            return True
+        if role_name == "admin":
+            if success and 'total_projects' in response:
+                self.log_test(f"Admin KPIs ({role_name})", True, 
+                             f"Total: {response.get('total_projects', 0)}, Active: {response.get('active_projects', 0)}")
+                return True
+            else:
+                self.log_test(f"Admin KPIs ({role_name})", False, str(response))
+                return False
         else:
-            self.log_test(f"Admin KPIs ({role_name})", False, str(response))
-            return False
+            # For non-admin users, we expect failure
+            if not success:
+                self.log_test(f"Admin KPIs ({role_name})", True, "Correctly blocked non-admin")
+                return True
+            else:
+                self.log_test(f"Admin KPIs ({role_name})", False, str(response))
+                return False
 
     def test_purchase_orders(self, role_name: str):
         """Test purchase orders endpoint"""
