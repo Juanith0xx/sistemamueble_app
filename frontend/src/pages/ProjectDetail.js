@@ -744,7 +744,7 @@ const ProjectDetail = () => {
                 </div>
               </div>
               <Button
-                onClick={() => window.open(`${API}/documents/download/${getPurchaseOrder().document_id}`, '_blank')}
+                onClick={() => handleDownloadFile(getPurchaseOrder().document_id, getPurchaseOrder().filename)}
                 variant="outline"
                 size="sm"
                 className="rounded-sm text-xs font-bold uppercase"
