@@ -25,6 +25,7 @@ const ProjectDetail = () => {
   const [advanceDialogOpen, setAdvanceDialogOpen] = useState(false);
   const [estimatedDays, setEstimatedDays] = useState(5);
   const [driveConnected, setDriveConnected] = useState(false);
+  const [uploadType, setUploadType] = useState('local'); // 'local' or 'drive'
 
   useEffect(() => {
     fetchProjectData();
