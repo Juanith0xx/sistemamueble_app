@@ -30,6 +30,8 @@ const ProjectDetail = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
+  const [materialsFile, setMaterialsFile] = useState(null);
+  const [uploadingMaterials, setUploadingMaterials] = useState(false);
 
   useEffect(() => {
     fetchProjectData();
