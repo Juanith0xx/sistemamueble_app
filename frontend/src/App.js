@@ -12,6 +12,7 @@ import PurchaseOrders from '@/pages/PurchaseOrders';
 import AdminPanel from '@/pages/AdminPanel';
 import Profile from '@/pages/Profile';
 import Studies from '@/pages/Studies';
+import StudyDetail from '@/pages/StudyDetail';
 import DashboardLayout from '@/components/DashboardLayout';
 import '@/App.css';
 
