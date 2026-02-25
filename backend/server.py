@@ -866,20 +866,23 @@ async def approve_study(study_id: str, user: User = Depends(get_current_user)):
 
 @api_router.get("/studies/{study_id}/pdf")
 async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)):
-    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.lib.pagesizes import A4
     from reportlab.lib import colors
     from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT
-    from io import BytesIO
+    from reportlab.lib.enums import TA_CENTER
+    import tempfile
     
     study = await db.studies.find_one({"study_id": study_id}, {"_id": 0})
     if not study:
         raise HTTPException(status_code=404, detail="Estudio no encontrado")
     
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    # Create temporary file
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+        pdf_path = tmp_file.name
+    
+    doc = SimpleDocTemplate(pdf_path, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
     elements = []
     styles = getSampleStyleSheet()
     
@@ -982,13 +985,11 @@ async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)
     elements.append(Paragraph("Sistema Robfu - Gestión de Producción Industrial", footer_style))
     
     doc.build(elements)
-    buffer.seek(0)
     
     return FileResponse(
-        path=buffer,
+        path=pdf_path,
         media_type="application/pdf",
-        filename=f"estudio_{study['name'].replace(' ', '_')}.pdf",
-        headers={"Content-Disposition": f"attachment; filename=estudio_{study['name'].replace(' ', '_')}.pdf"}
+        filename=f"estudio_{study['name'].replace(' ', '_')}.pdf"
     )
 
 # ==================== PURCHASE ORDER ROUTES ====================
