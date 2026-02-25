@@ -338,9 +338,11 @@ const ProjectDetail = () => {
   // Verificar si puede completar anticipadamente
   const canCompleteEarly = () => {
     if (!user || !project) return false;
+    if (project.status === 'completed' || project.status === 'draft') return false;
     
     const currentStage = project[`${project.status}_stage`];
-    if (!currentStage?.end_date || !currentStage?.estimated_days) return false;
+    // Solo necesita que la etapa haya iniciado (tenga start_date)
+    if (!currentStage?.start_date) return false;
     
     const stagePermissions = {
       'design': 'designer',
@@ -363,6 +365,13 @@ const ProjectDetail = () => {
     const now = new Date();
     const diff = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
     return diff;
+  };
+
+  // Verificar si tiene tiempo estimado definido
+  const hasEstimatedTime = () => {
+    if (!project) return false;
+    const currentStage = project[`${project.status}_stage`];
+    return currentStage?.estimated_days > 0 && currentStage?.end_date;
   };
 
   const canAdvanceStage = () => {
