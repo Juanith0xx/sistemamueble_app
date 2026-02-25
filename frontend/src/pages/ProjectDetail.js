@@ -35,6 +35,7 @@ const ProjectDetail = () => {
   const [purchaseOrderFile, setPurchaseOrderFile] = useState(null);
   const [uploadingPO, setUploadingPO] = useState(false);
   const [confirmingMaterials, setConfirmingMaterials] = useState(false);
+  const [estimateDialogOpen, setEstimateDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchProjectData();
