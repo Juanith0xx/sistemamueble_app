@@ -785,6 +785,104 @@ async def mark_notification_read(notification_id: str, user: User = Depends(get_
     )
     return {"success": True}
 
+# ==================== OBSERVATION/COMMENT ROUTES ====================
+
+@api_router.post("/observations", response_model=Observation)
+async def create_observation(obs_input: ObservationCreate, user: User = Depends(get_current_user)):
+    observation_id = str(uuid.uuid4())
+    
+    observation = {
+        "observation_id": observation_id,
+        "project_id": obs_input.project_id,
+        "stage": obs_input.stage,
+        "content": obs_input.content,
+        "created_by": user.user_id,
+        "created_by_name": user.name,
+        "created_by_role": user.role,
+        "recipients": obs_input.recipients,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.observations.insert_one(observation)
+    
+    # Create notifications for recipients
+    project = await db.projects.find_one({"project_id": obs_input.project_id}, {"_id": 0})
+    project_name = project["name"] if project else "Proyecto"
+    
+    for recipient_id in obs_input.recipients:
+        await create_notification(
+            recipient_id,
+            obs_input.project_id,
+            f"{user.name} te ha mencionado en una observación del proyecto '{project_name}'"
+        )
+    
+    observation.pop("_id", None)
+    return Observation(**observation)
+
+@api_router.get("/observations/project/{project_id}", response_model=List[Observation])
+async def get_project_observations(project_id: str, user: User = Depends(get_current_user)):
+    observations = await db.observations.find(
+        {"project_id": project_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+    return [Observation(**o) for o in observations]
+
+@api_router.get("/observations/my-mentions", response_model=List[Observation])
+async def get_my_mentions(user: User = Depends(get_current_user)):
+    observations = await db.observations.find(
+        {"recipients": user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return [Observation(**o) for o in observations]
+
+# ==================== USER PROFILE/AVATAR ROUTES ====================
+
+@api_router.post("/users/upload-avatar")
+async def upload_avatar(file: UploadFile = File(...), user: User = Depends(get_current_user)):
+    try:
+        # Validate file type
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="El archivo debe ser una imagen")
+        
+        # Generate unique filename
+        file_extension = Path(file.filename).suffix
+        unique_filename = f"{user.user_id}{file_extension}"
+        file_path = Path(f"/app/backend/avatars/{unique_filename}")
+        
+        # Save file
+        file_content = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(file_content)
+        
+        # Update user avatar_url
+        avatar_url = f"/api/avatars/{unique_filename}"
+        await db.users.update_one(
+            {"user_id": user.user_id},
+            {"$set": {"avatar_url": avatar_url}}
+        )
+        
+        return {"avatar_url": avatar_url, "message": "Avatar actualizado exitosamente"}
+    
+    except Exception as e:
+        logger.error(f"Error uploading avatar: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al subir avatar: {str(e)}")
+
+@api_router.get("/avatars/{filename}")
+async def get_avatar(filename: str):
+    file_path = Path(f"/app/backend/avatars/{filename}")
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Avatar no encontrado")
+    
+    return FileResponse(
+        path=str(file_path),
+        media_type="image/jpeg"
+    )
+
+@api_router.get("/users/all", response_model=List[Dict])
+async def get_all_users(user: User = Depends(get_current_user)):
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    return users
+
 # ==================== GOOGLE DRIVE ROUTES ====================
 
 @api_router.get("/drive/connect")
