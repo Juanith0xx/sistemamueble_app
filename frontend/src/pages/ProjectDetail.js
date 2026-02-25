@@ -71,29 +71,78 @@ const ProjectDetail = () => {
   };
 
   const onDrop = async (acceptedFiles) => {
-    const file = acceptedFiles[0];
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const endpoint = uploadType === 'local' 
-        ? `${API}/documents/upload-local?project_id=${id}&stage=${project.status}`
-        : `${API}/documents/upload?project_id=${id}&stage=${project.status}`;
-      
-      if (uploadType === 'drive' && !driveConnected) {
-        toast.error('Primero debes conectar Google Drive');
-        return;
-      }
-      
-      await axios.post(endpoint, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      toast.success('Archivo subido exitosamente');
-      setUploadDialogOpen(false);
-      fetchProjectData();
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Error al subir archivo');
+    // Check if adding these files would exceed 10
+    const totalFiles = documents.length + selectedFiles.length + acceptedFiles.length;
+    if (totalFiles > 10) {
+      toast.error(`Solo puedes tener hasta 10 documentos por proyecto. Ya tienes ${documents.length} y seleccionaste ${selectedFiles.length + acceptedFiles.length}`);
+      return;
     }
+    
+    // Add files to selected list
+    setSelectedFiles(prev => [...prev, ...acceptedFiles]);
+  };
+
+  const removeSelectedFile = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadAllFiles = async () => {
+    if (selectedFiles.length === 0) {
+      toast.error('No hay archivos seleccionados');
+      return;
+    }
+
+    setUploading(true);
+    const progress = {};
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      progress[i] = 'uploading';
+      setUploadProgress({...progress});
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const endpoint = uploadType === 'local' 
+          ? `${API}/documents/upload-local?project_id=${id}&stage=${project.status}`
+          : `${API}/documents/upload?project_id=${id}&stage=${project.status}`;
+        
+        if (uploadType === 'drive' && !driveConnected) {
+          toast.error('Primero debes conectar Google Drive');
+          progress[i] = 'error';
+          failCount++;
+          continue;
+        }
+        
+        await axios.post(endpoint, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        progress[i] = 'success';
+        successCount++;
+      } catch (error) {
+        progress[i] = 'error';
+        failCount++;
+        console.error(`Error uploading ${file.name}:`, error);
+      }
+      setUploadProgress({...progress});
+    }
+
+    setUploading(false);
+    
+    if (successCount > 0) {
+      toast.success(`${successCount} archivo(s) subido(s) exitosamente`);
+    }
+    if (failCount > 0) {
+      toast.error(`${failCount} archivo(s) fallaron al subir`);
+    }
+    
+    setSelectedFiles([]);
+    setUploadProgress({});
+    setUploadDialogOpen(false);
+    fetchProjectData();
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
