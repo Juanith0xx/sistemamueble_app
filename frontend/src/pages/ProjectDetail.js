@@ -290,6 +290,9 @@ const ProjectDetail = () => {
         </div>
       </div>
 
+      {/* Observations Section */}
+      <ObservationsSection projectId={id} currentStage={project.status} />
+
       {/* Documents */}
       <div className="bg-white border border-slate-200 rounded-sm p-5">
         <div className="flex items-center justify-between mb-4">
