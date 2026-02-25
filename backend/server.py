@@ -569,6 +569,31 @@ async def update_stage_duration(project_id: str, stage: str, new_days: int, user
     updated_project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
     return Project(**updated_project)
 
+@api_router.post("/projects/{project_id}/confirm-materials")
+async def confirm_materials_received(project_id: str, user: User = Depends(get_current_user)):
+    """Bodega confirma que todos los materiales están listos para fabricación"""
+    project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    
+    if project["status"] != ProjectStatus.WAREHOUSE:
+        raise HTTPException(status_code=400, detail="El proyecto no está en etapa de bodega")
+    
+    if user.role != UserRole.WAREHOUSE and user.role != UserRole.SUPERADMIN:
+        raise HTTPException(status_code=403, detail="Solo el usuario de bodega puede confirmar los materiales")
+    
+    updates = {
+        "warehouse_stage.materials_confirmed": True,
+        "warehouse_stage.materials_confirmed_at": datetime.now(timezone.utc).isoformat(),
+        "warehouse_stage.materials_confirmed_by": user.user_id,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.projects.update_one({"project_id": project_id}, {"$set": updates})
+    
+    updated_project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
+    return Project(**updated_project)
+
 # ==================== DOCUMENT ROUTES ====================
 
 @api_router.post("/documents/upload")
