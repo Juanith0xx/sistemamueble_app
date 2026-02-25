@@ -33,6 +33,7 @@ function App() {
             <Route path="gantt" element={<GanttView />} />
             <Route path="purchase-orders" element={<PurchaseOrders />} />
             <Route path="admin" element={<AdminPanel />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
         </Routes>
         <Toaster position="top-right" />
