@@ -169,6 +169,42 @@ const ProjectDetail = () => {
     }
   };
 
+  // Verificar si existe el listado de materiales
+  const getMaterialsList = () => {
+    return documents.find(doc => doc.document_type === 'materials_list');
+  };
+
+  // Subir listado de materiales
+  const handleUploadMaterialsList = async (file) => {
+    if (!file) return;
+    
+    const validExtensions = ['.xls', '.xlsx'];
+    const fileExt = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    if (!validExtensions.includes(fileExt)) {
+      toast.error('El listado de materiales debe ser un archivo Excel (.xls o .xlsx)');
+      return;
+    }
+
+    setUploadingMaterials(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await axios.post(
+        `${API}/documents/upload-local?project_id=${id}&stage=${project.status}&document_type=materials_list`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      toast.success('Listado de materiales subido exitosamente');
+      setMaterialsFile(null);
+      fetchProjectData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al subir listado de materiales');
+    } finally {
+      setUploadingMaterials(false);
+    }
+  };
+
   const canAdvanceStage = () => {
     if (!user || !project) return false;
     
