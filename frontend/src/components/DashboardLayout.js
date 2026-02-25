@@ -109,7 +109,14 @@ const DashboardLayout = () => {
                   <div className="flex-1">
                     <div className="text-xs font-mono uppercase tracking-widest text-slate-400">Usuario</div>
                     <div className="text-sm font-medium text-slate-900">{user?.name}</div>
-                    <div className="text-xs text-slate-500 capitalize">{user?.role?.replace('_', ' ')}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 capitalize">{user?.role?.replace('_', ' ')}</span>
+                      {user?.stars > 0 && (
+                        <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-sm font-medium">
+                          ⭐ {user.stars}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <button
