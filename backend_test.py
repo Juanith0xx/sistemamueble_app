@@ -151,8 +151,9 @@ class GanttAPITester:
             return False
             
         project_id = self.test_data['project_id']
-        success, response = self.make_request("POST", f"projects/{project_id}/advance-stage", 
-                                            {"estimated_days": 3}, auth_user=role_name)
+        # Use query parameter as expected by the API
+        success, response = self.make_request("POST", f"projects/{project_id}/advance-stage?estimated_days=3", 
+                                            None, auth_user=role_name)
         
         # Designer should be able to advance from design stage
         if role_name == "designer" and success:
