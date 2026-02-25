@@ -515,6 +515,160 @@ const ProjectDetail = () => {
         </div>
       )}
 
+      {/* Purchase Order Section - Visible for purchasing stage and beyond */}
+      {['purchasing', 'warehouse', 'manufacturing', 'completed'].includes(project.status) && (
+        <div className="bg-white border-2 border-blue-300 rounded-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-sm flex items-center justify-center">
+                <FileText className="w-4 h-4 text-blue-600" />
+              </div>
+              <div>
+                <div className="text-xs font-mono uppercase tracking-widest text-slate-400">
+                  Orden de Compra (OC)
+                </div>
+                <div className="text-xs text-blue-600">
+                  {project.status === 'purchasing' ? 'Requerido para avanzar' : 'Documento de compras'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {getPurchaseOrder() ? (
+            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-sm">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div>
+                  <div className="font-medium text-sm text-slate-900">{getPurchaseOrder().filename}</div>
+                  <div className="text-xs text-slate-500">
+                    Subido el {new Date(getPurchaseOrder().created_at).toLocaleDateString('es-ES')}
+                  </div>
+                </div>
+              </div>
+              <Button
+                onClick={() => window.open(`${API}/documents/download/${getPurchaseOrder().document_id}`, '_blank')}
+                variant="outline"
+                size="sm"
+                className="rounded-sm text-xs font-bold uppercase"
+              >
+                Descargar
+              </Button>
+            </div>
+          ) : project.status === 'purchasing' && user?.role === 'purchasing' ? (
+            <div className="space-y-3">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-sm">
+                <p className="text-sm text-blue-800 mb-3">
+                  <strong>⚠️ Acción requerida:</strong> Debe subir la Orden de Compra (OC) antes de poder avanzar a la etapa de Bodega.
+                </p>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="file"
+                    accept=".pdf,.xls,.xlsx"
+                    onChange={(e) => setPurchaseOrderFile(e.target.files[0])}
+                    className="flex-1 h-9 text-sm"
+                  />
+                  <Button
+                    onClick={() => handleUploadPurchaseOrder(purchaseOrderFile)}
+                    disabled={!purchaseOrderFile || uploadingPO}
+                    className="bg-blue-600 text-white hover:bg-blue-700 rounded-sm px-4 h-9 text-xs font-bold uppercase"
+                  >
+                    {uploadingPO ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Subiendo...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Subir OC
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-sm text-center">
+              <p className="text-sm text-slate-500">
+                {project.status === 'purchasing' 
+                  ? 'El usuario de compras debe subir la Orden de Compra'
+                  : 'No se ha subido la Orden de Compra aún'
+                }
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Materials Confirmation Section - Visible for warehouse stage */}
+      {['warehouse', 'manufacturing', 'completed'].includes(project.status) && (
+        <div className="bg-white border-2 border-green-300 rounded-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-100 rounded-sm flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+              </div>
+              <div>
+                <div className="text-xs font-mono uppercase tracking-widest text-slate-400">
+                  Confirmación de Materiales
+                </div>
+                <div className="text-xs text-green-600">
+                  {project.status === 'warehouse' ? 'Requerido para avanzar a fabricación' : 'Estado de materiales'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {project.warehouse_stage?.materials_confirmed ? (
+            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-sm">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div>
+                  <div className="font-medium text-sm text-slate-900">Materiales confirmados como listos</div>
+                  <div className="text-xs text-slate-500">
+                    Confirmado el {new Date(project.warehouse_stage.materials_confirmed_at).toLocaleDateString('es-ES')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : project.status === 'warehouse' && user?.role === 'warehouse' ? (
+            <div className="space-y-3">
+              <div className="p-4 bg-green-50 border border-green-200 rounded-sm">
+                <p className="text-sm text-green-800 mb-3">
+                  <strong>⚠️ Acción requerida:</strong> Confirme que todos los materiales están listos para iniciar la fabricación.
+                </p>
+                <Button
+                  onClick={handleConfirmMaterials}
+                  disabled={confirmingMaterials}
+                  className="bg-green-600 text-white hover:bg-green-700 rounded-sm px-6 h-10 text-sm font-bold uppercase"
+                >
+                  {confirmingMaterials ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Confirmando...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Confirmar Materiales Listos
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-sm text-center">
+              <p className="text-sm text-slate-500">
+                {project.status === 'warehouse' 
+                  ? 'El usuario de bodega debe confirmar que los materiales están listos'
+                  : 'Pendiente de confirmación'
+                }
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Documents */}
       <div className="bg-white border border-slate-200 rounded-sm p-5">
         <div className="flex items-center justify-between mb-4">
