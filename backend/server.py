@@ -168,6 +168,41 @@ class PurchaseOrder(BaseModel):
     created_at: str
     updated_at: str
 
+class StudyStageEstimate(BaseModel):
+    estimated_days: int = 0
+    estimated_by: Optional[str] = None
+    estimated_at: Optional[str] = None
+    notes: Optional[str] = None
+
+class ProjectStudyCreate(BaseModel):
+    name: str
+    description: str
+    client_name: str
+
+class ProjectStudy(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    study_id: str
+    name: str
+    description: str
+    client_name: str
+    created_by: str
+    status: str  # draft, in_review, approved, rejected
+    design_stage: StudyStageEstimate
+    validation_stage: StudyStageEstimate
+    purchasing_stage: StudyStageEstimate
+    warehouse_stage: StudyStageEstimate
+    manufacturing_stage: StudyStageEstimate
+    total_estimated_days: int
+    estimated_start_date: Optional[str] = None
+    estimated_end_date: Optional[str] = None
+    started_project_id: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+class StageEstimateUpdate(BaseModel):
+    estimated_days: int
+    notes: Optional[str] = None
+
 class Notification(BaseModel):
     model_config = ConfigDict(extra="ignore")
     notification_id: str
