@@ -163,13 +163,47 @@ const ProjectDetail = () => {
 
   const handleAdvanceStage = async () => {
     try {
-      await axios.post(`${API}/projects/${id}/advance-stage?estimated_days=${estimatedDays}`);
+      await axios.post(`${API}/projects/${id}/advance-stage`);
       toast.success('Etapa avanzada exitosamente');
       setAdvanceDialogOpen(false);
       fetchProjectData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Error al avanzar etapa');
     }
+  };
+
+  // Definir tiempo estimado para mi etapa
+  const handleSetMyEstimate = async () => {
+    if (estimatedDays <= 0) {
+      toast.error('El tiempo estimado debe ser mayor a 0 días');
+      return;
+    }
+    try {
+      await axios.post(`${API}/projects/${id}/set-my-estimate?estimated_days=${estimatedDays}`);
+      toast.success('Tiempo estimado guardado exitosamente');
+      setEstimateDialogOpen(false);
+      fetchProjectData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al guardar tiempo estimado');
+    }
+  };
+
+  // Verificar si el usuario actual puede definir tiempo en esta etapa
+  const canSetEstimate = () => {
+    if (!user || !project) return false;
+    const currentStage = project[`${project.status}_stage`];
+    // Solo puede definir si la etapa no tiene tiempo definido o es 0
+    if (currentStage?.estimated_days > 0) return false;
+    
+    const stagePermissions = {
+      'design': 'designer',
+      'validation': 'manufacturing_chief',
+      'purchasing': 'purchasing',
+      'warehouse': 'warehouse',
+      'manufacturing': 'designer'
+    };
+    
+    return stagePermissions[project.status] === user.role || user.role === 'superadmin';
   };
 
   // Verificar si existe el listado de materiales
