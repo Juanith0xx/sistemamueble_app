@@ -566,6 +566,52 @@ async def update_stage_duration(project_id: str, stage: str, new_days: int, user
     updated_project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
     return Project(**updated_project)
 
+@api_router.post("/projects/{project_id}/set-my-estimate")
+async def set_my_stage_estimate(project_id: str, estimated_days: int, user: User = Depends(get_current_user)):
+    """Permite al usuario de la etapa actual definir su tiempo estimado"""
+    project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    
+    current_status = project["status"]
+    
+    # Verificar permisos según etapa actual
+    stage_permissions = {
+        "design": UserRole.DESIGNER,
+        "validation": UserRole.MANUFACTURING_CHIEF,
+        "purchasing": UserRole.PURCHASING,
+        "warehouse": UserRole.WAREHOUSE,
+        "manufacturing": UserRole.DESIGNER
+    }
+    
+    if current_status not in stage_permissions:
+        raise HTTPException(status_code=400, detail="El proyecto está en un estado que no permite definir tiempo")
+    
+    if user.role != stage_permissions[current_status] and user.role != UserRole.SUPERADMIN:
+        raise HTTPException(status_code=403, detail="No tienes permiso para definir el tiempo de esta etapa")
+    
+    stage_key = f"{current_status}_stage"
+    current_stage = project.get(stage_key, {})
+    
+    if not current_stage.get("start_date"):
+        raise HTTPException(status_code=400, detail="Esta etapa aún no ha comenzado")
+    
+    start = datetime.fromisoformat(current_stage["start_date"])
+    new_end = start + timedelta(days=estimated_days)
+    
+    updates = {
+        f"{stage_key}.estimated_days": estimated_days,
+        f"{stage_key}.end_date": new_end.isoformat(),
+        f"{stage_key}.estimated_by": user.user_id,
+        f"{stage_key}.estimated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.projects.update_one({"project_id": project_id}, {"$set": updates})
+    
+    updated_project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
+    return Project(**updated_project)
+
 @api_router.post("/projects/{project_id}/confirm-materials")
 async def confirm_materials_received(project_id: str, user: User = Depends(get_current_user)):
     """Bodega confirma que todos los materiales están listos para fabricación"""
