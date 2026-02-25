@@ -357,7 +357,38 @@ const ProjectDetail = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <p className="text-sm text-slate-600">
-                  ¿Cuántos días estimas para la siguiente etapa?
+                  ¿Estás seguro de que deseas avanzar a la siguiente etapa? El siguiente responsable deberá definir su tiempo estimado.
+                </p>
+                <Button
+                  onClick={handleAdvanceStage}
+                  className="w-full bg-slate-900 text-white hover:bg-slate-800 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs transition-all active:scale-95"
+                >
+                  Confirmar Avance
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Dialog for setting my estimate */}
+        {canSetEstimate() && (
+          <Dialog open={estimateDialogOpen} onOpenChange={setEstimateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                data-testid="set-estimate-button"
+                className="bg-blue-500 text-white hover:bg-blue-600 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs shadow-sm hover:shadow-md transition-all active:scale-95"
+              >
+                <Clock className="w-4 h-4 mr-2" />
+                Definir Mi Tiempo
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md bg-white">
+              <DialogHeader>
+                <DialogTitle className="font-heading text-xl uppercase tracking-tight">Mi Tiempo Estimado</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-slate-600">
+                  Define cuántos días estimas que te tomará completar esta etapa.
                 </p>
                 <div>
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">
@@ -367,15 +398,15 @@ const ProjectDetail = () => {
                     type="number"
                     min="1"
                     value={estimatedDays}
-                    onChange={(e) => setEstimatedDays(parseInt(e.target.value))}
-                    className="h-10 rounded-sm border-slate-300 bg-slate-50 focus:bg-white focus:ring-offset-0 focus:border-orange-500 font-mono text-sm"
+                    onChange={(e) => setEstimatedDays(parseInt(e.target.value) || 0)}
+                    className="h-10 rounded-sm border-slate-300 bg-slate-50 focus:bg-white focus:ring-offset-0 focus:border-blue-500 font-mono text-sm"
                   />
                 </div>
                 <Button
-                  onClick={handleAdvanceStage}
-                  className="w-full bg-slate-900 text-white hover:bg-slate-800 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs transition-all active:scale-95"
+                  onClick={handleSetMyEstimate}
+                  className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs transition-all active:scale-95"
                 >
-                  Confirmar
+                  Guardar Tiempo Estimado
                 </Button>
               </div>
             </DialogContent>
