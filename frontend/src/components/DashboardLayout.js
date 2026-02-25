@@ -57,8 +57,8 @@ const DashboardLayout = () => {
         <div className="h-full flex flex-col">
           <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200">
             {sidebarOpen && (
-              <div className="flex items-center gap-2">
-                <Factory className="w-6 h-6 text-orange-500" />
+              <div className="flex items-center gap-3">
+                <img src="/robfu-logo.png" alt="Robfu" className="h-8" />
                 <span className="font-heading font-bold text-lg uppercase tracking-tight">Gantt Pro</span>
               </div>
             )}
