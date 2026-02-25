@@ -37,7 +37,7 @@ const DashboardLayout = () => {
     { label: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['all'] },
     { label: 'Proyectos', path: '/projects', icon: FolderKanban, roles: ['all'] },
     { label: 'Gantt', path: '/gantt', icon: GanttChart, roles: ['all'] },
-    { label: 'Órdenes de Compra', path: '/purchase-orders', icon: ShoppingCart, roles: ['purchasing', 'superadmin'] },
+    { label: 'Ordenes de Compra', path: '/purchase-orders', icon: ShoppingCart, roles: ['purchasing', 'superadmin'] },
     { label: 'Panel Admin', path: '/admin', icon: Shield, roles: ['superadmin'] },
   ];
 
