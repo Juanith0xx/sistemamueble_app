@@ -32,6 +32,9 @@ const ProjectDetail = () => {
   const [uploadProgress, setUploadProgress] = useState({});
   const [materialsFile, setMaterialsFile] = useState(null);
   const [uploadingMaterials, setUploadingMaterials] = useState(false);
+  const [purchaseOrderFile, setPurchaseOrderFile] = useState(null);
+  const [uploadingPO, setUploadingPO] = useState(false);
+  const [confirmingMaterials, setConfirmingMaterials] = useState(false);
 
   useEffect(() => {
     fetchProjectData();
