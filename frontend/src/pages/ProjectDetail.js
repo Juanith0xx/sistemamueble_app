@@ -659,7 +659,7 @@ const ProjectDetail = () => {
                 </div>
               </div>
               <Button
-                onClick={() => window.open(`${API}/documents/download/${getMaterialsList().document_id}`, '_blank')}
+                onClick={() => handleDownloadFile(getMaterialsList().document_id, getMaterialsList().filename)}
                 variant="outline"
                 size="sm"
                 className="rounded-sm text-xs font-bold uppercase"
