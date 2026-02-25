@@ -537,10 +537,81 @@ async def upload_document(
         logger.error(f"Error uploading to Drive: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error al subir archivo: {str(e)}")
 
-@api_router.get("/documents/project/{project_id}", response_model=List[DocumentUpload])
+@api_router.post("/documents/upload-local")
+async def upload_document_local(
+    project_id: str,
+    stage: str,
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user)
+):
+    project = await db.projects.find_one({"project_id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    
+    try:
+        # Crear carpeta del proyecto si no existe
+        project_upload_dir = Path(f"/app/backend/uploads/{project_id}")
+        project_upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generar nombre único para el archivo
+        file_extension = Path(file.filename).suffix
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        file_path = project_upload_dir / unique_filename
+        
+        # Guardar archivo
+        file_content = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(file_content)
+        
+        # Crear registro en base de datos
+        document = {
+            "document_id": str(uuid.uuid4()),
+            "project_id": project_id,
+            "filename": file.filename,
+            "file_type": file.content_type,
+            "storage_type": "local",
+            "local_path": str(file_path),
+            "unique_filename": unique_filename,
+            "uploaded_by": user.user_id,
+            "stage": stage,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.documents.insert_one(document)
+        document.pop("_id", None)
+        
+        return document
+    
+    except Exception as e:
+        logger.error(f"Error uploading local file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al subir archivo: {str(e)}")
+
+@api_router.get("/documents/download/{document_id}")
+async def download_document(document_id: str, user: User = Depends(get_current_user)):
+    from fastapi.responses import FileResponse
+    
+    document = await db.documents.find_one({"document_id": document_id}, {"_id": 0})
+    if not document:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+    
+    if document.get("storage_type") == "local":
+        file_path = Path(document["local_path"])
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="Archivo no encontrado en el servidor")
+        
+        return FileResponse(
+            path=str(file_path),
+            filename=document["filename"],
+            media_type=document.get("file_type", "application/octet-stream")
+        )
+    else:
+        # Redirigir a Google Drive
+        return {"redirect_url": document.get("drive_url")}
+
+@api_router.get("/documents/project/{project_id}", response_model=List[Dict])
 async def get_project_documents(project_id: str, user: User = Depends(get_current_user)):
     documents = await db.documents.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
-    return [DocumentUpload(**d) for d in documents]
+    return documents
 
 # ==================== PURCHASE ORDER ROUTES ====================
 
