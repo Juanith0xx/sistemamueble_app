@@ -869,9 +869,11 @@ async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)
     from reportlab.lib.pagesizes import A4
     from reportlab.lib import colors
     from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Drawing
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.enums import TA_CENTER
+    from reportlab.graphics.shapes import Rect, String
+    from reportlab.graphics import renderPDF
     import tempfile
     
     study = await db.studies.find_one({"study_id": study_id}, {"_id": 0})
@@ -925,7 +927,63 @@ async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)
     elements.append(info_table)
     elements.append(Spacer(1, 0.4*inch))
     
-    # Stages Timeline
+    # Gantt Chart
+    if study['total_estimated_days'] > 0:
+        elements.append(Paragraph("DIAGRAMA DE GANTT", styles['Heading2']))
+        elements.append(Spacer(1, 0.2*inch))
+        
+        # Create Gantt drawing
+        gantt_width = 6.5 * inch
+        gantt_height = 3.5 * inch
+        d = Drawing(gantt_width, gantt_height)
+        
+        stages_info = [
+            ("design_stage", "Diseño", colors.HexColor('#3B82F6')),
+            ("validation_stage", "Validación", colors.HexColor('#A855F7')),
+            ("purchasing_stage", "Compras", colors.HexColor('#EAB308')),
+            ("warehouse_stage", "Bodega", colors.HexColor('#F97316')),
+            ("manufacturing_stage", "Fabricación", colors.HexColor('#06B6D4'))
+        ]
+        
+        y_offset = gantt_height - 40
+        bar_height = 35
+        spacing = 50
+        
+        cumulative_days = 0
+        for stage_key, stage_label, stage_color in stages_info:
+            stage_data = study[stage_key]
+            if stage_data['estimated_days'] > 0:
+                # Label
+                d.add(String(10, y_offset + 10, stage_label, fontSize=9, fillColor=colors.HexColor('#475569')))
+                
+                # Calculate bar position and width
+                start_x = 120 + (cumulative_days / study['total_estimated_days']) * (gantt_width - 140)
+                bar_width = (stage_data['estimated_days'] / study['total_estimated_days']) * (gantt_width - 140)
+                
+                # Draw bar
+                d.add(Rect(start_x, y_offset, bar_width, bar_height, 
+                          fillColor=stage_color, strokeColor=stage_color, strokeWidth=1))
+                
+                # Days text
+                d.add(String(start_x + 5, y_offset + 12, f"{stage_data['estimated_days']}d", 
+                           fontSize=8, fillColor=colors.white, fontName='Helvetica-Bold'))
+                
+                cumulative_days += stage_data['estimated_days']
+                y_offset -= spacing
+        
+        # Timeline markers
+        timeline_y = 20
+        for i in [0, 0.25, 0.5, 0.75, 1.0]:
+            x_pos = 120 + i * (gantt_width - 140)
+            d.add(Rect(x_pos, timeline_y, 1, 10, fillColor=colors.HexColor('#94A3B8')))
+            day_label = int(i * study['total_estimated_days'])
+            d.add(String(x_pos - 10, timeline_y - 10, f"Día {day_label}", 
+                        fontSize=7, fillColor=colors.HexColor('#64748B')))
+        
+        elements.append(d)
+        elements.append(Spacer(1, 0.3*inch))
+    
+    # Stages Timeline Table
     elements.append(Paragraph("CRONOGRAMA ESTIMADO POR ETAPAS", styles['Heading2']))
     elements.append(Spacer(1, 0.2*inch))
     
