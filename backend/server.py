@@ -519,13 +519,10 @@ async def advance_project_stage(project_id: str, user: User = Depends(get_curren
     updates["status"] = next_status
     
     if next_stage_key:
-        last_end = datetime.now(timezone.utc)
-        new_end = last_end + timedelta(days=estimated_days)
-        
-        updates[f"{next_stage_key}.estimated_days"] = estimated_days
-        updates[f"{next_stage_key}.start_date"] = last_end.isoformat()
-        updates[f"{next_stage_key}.end_date"] = new_end.isoformat()
+        # La siguiente etapa comienza sin tiempo estimado - el usuario responsable lo definirá
+        updates[f"{next_stage_key}.start_date"] = datetime.now(timezone.utc).isoformat()
         updates[f"{next_stage_key}.status"] = StageStatus.IN_PROGRESS
+        updates[f"{next_stage_key}.estimated_days"] = 0  # Pendiente de definir
         
         if next_role:
             next_users = await db.users.find({"role": next_role}, {"_id": 0}).to_list(100)
@@ -533,7 +530,7 @@ async def advance_project_stage(project_id: str, user: User = Depends(get_curren
                 await create_notification(
                     next_user["user_id"],
                     project_id,
-                    f"El proyecto '{project['name']}' ha avanzado a la etapa {next_status}. Requiere tu atención."
+                    f"El proyecto '{project['name']}' ha avanzado a la etapa {next_status}. Por favor define tu tiempo estimado."
                 )
     
     await db.projects.update_one({"project_id": project_id}, {"$set": updates})
