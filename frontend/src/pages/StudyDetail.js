@@ -360,13 +360,19 @@ const StudyDetail = () => {
         })}
       </div>
 
-      {/* Timeline Visualization */}
+      {/* Timeline Visualization - Gantt Mejorado */}
       {study.total_estimated_days > 0 && (
         <div className="mt-6 bg-white border border-slate-200 rounded-sm p-6">
-          <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-4">
-            Timeline Simulado
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-xs font-mono uppercase tracking-widest text-slate-400">
+              Diagrama de Gantt - Simulación
+            </div>
+            <div className="text-xs text-slate-500">
+              Total: {study.total_estimated_days} días laborales
+            </div>
           </div>
-          <div className="relative">
+          
+          <div className="space-y-3">
             {stages.map((stage, index) => {
               if (stage.data.estimated_days === 0) return null;
               
@@ -374,26 +380,73 @@ const StudyDetail = () => {
               const width = (stage.data.estimated_days / study.total_estimated_days) * 100;
               
               return (
-                <div key={stage.key} className="mb-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-medium text-slate-600 w-32">{stage.label}</span>
-                    <span className="text-xs text-slate-400">{stage.data.estimated_days} días</span>
+                <div key={stage.key}>
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <span className="text-lg">{stage.icon}</span>
+                    <span className="text-xs font-medium text-slate-700 w-40">{stage.label}</span>
+                    <span className="text-xs text-slate-500 font-mono">{stage.data.estimated_days} días</span>
                   </div>
-                  <div className="relative h-8 bg-slate-100 rounded-sm overflow-hidden">
+                  <div className="relative h-12 bg-slate-100 rounded-sm overflow-hidden ml-10">
                     <div
-                      className={`absolute h-full bg-${stage.color}-500 flex items-center justify-center text-white text-xs font-bold`}
-                      style={{ width: `${width}%` }}
+                      className={`absolute h-full transition-all duration-500 flex items-center px-3 text-white text-xs font-bold shadow-md
+                        ${stage.color === 'blue' ? 'bg-blue-500' : ''}
+                        ${stage.color === 'purple' ? 'bg-purple-500' : ''}
+                        ${stage.color === 'yellow' ? 'bg-yellow-500' : ''}
+                        ${stage.color === 'orange' ? 'bg-orange-500' : ''}
+                        ${stage.color === 'cyan' ? 'bg-cyan-500' : ''}
+                      `}
+                      style={{ 
+                        width: `${width}%`,
+                        marginLeft: `${(startDay / study.total_estimated_days) * 100}%`
+                      }}
                     >
-                      {stage.data.estimated_days}d
+                      <div className="flex items-center justify-between w-full">
+                        <span>{stage.data.estimated_days}d</span>
+                        {stage.data.notes && (
+                          <span className="text-xs opacity-80 truncate ml-2">{stage.data.notes}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               );
             })}
-            <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between text-xs text-slate-500">
-              <span>Día 0</span>
-              <span>Día {study.total_estimated_days}</span>
+            
+            {/* Timeline ruler */}
+            <div className="mt-6 ml-10">
+              <div className="relative h-8 border-t border-slate-300">
+                {[0, 25, 50, 75, 100].map((percent) => (
+                  <div
+                    key={percent}
+                    className="absolute top-0 flex flex-col items-center"
+                    style={{ left: `${percent}%` }}
+                  >
+                    <div className="w-px h-2 bg-slate-400"></div>
+                    <span className="text-xs text-slate-500 mt-1 font-mono">
+                      Día {Math.round((percent / 100) * study.total_estimated_days)}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Fechas estimadas */}
+            {study.estimated_start_date && study.estimated_end_date && (
+              <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center ml-10">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs text-slate-600">
+                    Inicio: <span className="font-mono">{new Date(study.estimated_start_date).toLocaleDateString('es-ES')}</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs text-slate-600">
+                    Fin: <span className="font-mono">{new Date(study.estimated_end_date).toLocaleDateString('es-ES')}</span>
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
