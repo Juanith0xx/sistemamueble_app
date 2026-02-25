@@ -1205,6 +1205,63 @@ async def get_dashboard_kpis(user: User = Depends(get_current_user)):
         "delays_by_stage": delays_by_stage
     }
 
+@api_router.get("/dashboard/projects-by-status")
+async def get_projects_by_status(status: str, user: User = Depends(get_current_user)):
+    if user.role != UserRole.SUPERADMIN:
+        raise HTTPException(status_code=403, detail="Solo el superadmin puede acceder")
+    
+    all_projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    now = datetime.now(timezone.utc)
+    
+    filtered_projects = []
+    
+    for project in all_projects:
+        if status == "total":
+            filtered_projects.append(project)
+        else:
+            # Check project status based on current stage end date
+            stage_key = f"{project['status']}_stage"
+            if stage_key in project and project[stage_key].get("end_date"):
+                end_date = datetime.fromisoformat(project[stage_key]["end_date"])
+                days_diff = (end_date - now).days
+                
+                if status == "delayed" and days_diff < 0:
+                    filtered_projects.append(project)
+                elif status == "at_risk" and 0 <= days_diff <= 2:
+                    filtered_projects.append(project)
+                elif status == "on_time" and days_diff > 2:
+                    filtered_projects.append(project)
+    
+    # Generate Gantt data for filtered projects
+    gantt_tasks = []
+    for project in filtered_projects:
+        stages = [
+            ("design_stage", "Diseño"),
+            ("validation_stage", "Validación"),
+            ("purchasing_stage", "Compras"),
+            ("warehouse_stage", "Bodega"),
+            ("manufacturing_stage", "Fabricación")
+        ]
+        
+        for stage_key, stage_name in stages:
+            stage = project.get(stage_key, {})
+            if stage.get("start_date"):
+                gantt_tasks.append({
+                    "id": f"{project['project_id']}-{stage_key}",
+                    "project_id": project["project_id"],
+                    "project_name": project["name"],
+                    "name": f"{project['name']} - {stage_name}",
+                    "start": stage["start_date"],
+                    "end": stage.get("end_date", stage["start_date"]),
+                    "progress": 100 if stage["status"] == StageStatus.COMPLETED else 50 if stage["status"] == StageStatus.IN_PROGRESS else 0,
+                    "status": stage["status"]
+                })
+    
+    return {
+        "projects": filtered_projects,
+        "gantt_tasks": gantt_tasks
+    }
+
 # ==================== NOTIFICATION ROUTES ====================
 
 @api_router.get("/notifications", response_model=List[Notification])
