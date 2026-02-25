@@ -384,6 +384,91 @@ const ProjectDetail = () => {
       {/* Observations Section */}
       <ObservationsSection projectId={id} currentStage={project.status} />
 
+      {/* Materials List Section - Visible for validation stage and beyond */}
+      {['validation', 'purchasing', 'warehouse', 'manufacturing', 'completed'].includes(project.status) && (
+        <div className="bg-white border-2 border-amber-300 rounded-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-amber-100 rounded-sm flex items-center justify-center">
+                <FileText className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <div className="text-xs font-mono uppercase tracking-widest text-slate-400">
+                  Listado de Materiales
+                </div>
+                <div className="text-xs text-amber-600">
+                  {project.status === 'validation' ? 'Requerido para avanzar' : 'Visible para compras y bodega'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {getMaterialsList() ? (
+            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-sm">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div>
+                  <div className="font-medium text-sm text-slate-900">{getMaterialsList().filename}</div>
+                  <div className="text-xs text-slate-500">
+                    Subido el {new Date(getMaterialsList().created_at).toLocaleDateString('es-ES')}
+                  </div>
+                </div>
+              </div>
+              <Button
+                onClick={() => window.open(`${API}/documents/download/${getMaterialsList().document_id}`, '_blank')}
+                variant="outline"
+                size="sm"
+                className="rounded-sm text-xs font-bold uppercase"
+              >
+                Descargar
+              </Button>
+            </div>
+          ) : project.status === 'validation' && user?.role === 'manufacturing_chief' ? (
+            <div className="space-y-3">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-sm">
+                <p className="text-sm text-amber-800 mb-3">
+                  <strong>⚠️ Acción requerida:</strong> Debe subir el listado de materiales (Excel) antes de poder avanzar a la etapa de Compras.
+                </p>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="file"
+                    accept=".xls,.xlsx"
+                    onChange={(e) => setMaterialsFile(e.target.files[0])}
+                    className="flex-1 h-9 text-sm"
+                  />
+                  <Button
+                    onClick={() => handleUploadMaterialsList(materialsFile)}
+                    disabled={!materialsFile || uploadingMaterials}
+                    className="bg-amber-600 text-white hover:bg-amber-700 rounded-sm px-4 h-9 text-xs font-bold uppercase"
+                  >
+                    {uploadingMaterials ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Subiendo...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Subir Listado
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-sm text-center">
+              <p className="text-sm text-slate-500">
+                {project.status === 'validation' 
+                  ? 'El jefe de fabricación debe subir el listado de materiales'
+                  : 'No se ha subido el listado de materiales aún'
+                }
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Documents */}
       <div className="bg-white border border-slate-200 rounded-sm p-5">
         <div className="flex items-center justify-between mb-4">
