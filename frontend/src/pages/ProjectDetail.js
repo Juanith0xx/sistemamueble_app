@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { useDropzone } from 'react-dropzone';
+import ObservationsSection from '@/components/ObservationsSection';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
