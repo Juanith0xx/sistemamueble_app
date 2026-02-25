@@ -106,7 +106,7 @@ const StudyDetail = () => {
       design: ['designer', 'superadmin'],
       validation: ['manufacturing_chief', 'superadmin'],
       purchasing: ['purchasing', 'superadmin'],
-      warehouse: ['warehouse', 'superadmin'],
+      warehouse: ['purchasing', 'warehouse', 'superadmin'],  // Compras puede editar ambos
       manufacturing: ['designer', 'superadmin']
     };
     return permissions[stage]?.includes(user?.role);
