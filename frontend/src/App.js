@@ -11,6 +11,7 @@ import GanttView from '@/pages/GanttView';
 import PurchaseOrders from '@/pages/PurchaseOrders';
 import AdminPanel from '@/pages/AdminPanel';
 import Profile from '@/pages/Profile';
+import Studies from '@/pages/Studies';
 import DashboardLayout from '@/components/DashboardLayout';
 import '@/App.css';
 
