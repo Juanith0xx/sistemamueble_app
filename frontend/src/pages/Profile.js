@@ -117,34 +117,116 @@ const Profile = () => {
 
         {/* User Info */}
         <div className="md:col-span-2 bg-white border border-slate-200 rounded-sm p-6">
-          <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4 block">
-            Información del Usuario
-          </Label>
+          <div className="flex items-center justify-between mb-4">
+            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Información del Usuario
+            </Label>
+            {!editing ? (
+              <Button
+                onClick={() => setEditing(true)}
+                variant="outline"
+                className="rounded-sm px-4 h-9 text-xs font-bold uppercase tracking-wide"
+              >
+                Editar
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setEditing(false);
+                    setFormData({
+                      name: user?.name || '',
+                      email: user?.email || '',
+                      role: user?.role || ''
+                    });
+                  }}
+                  variant="outline"
+                  className="rounded-sm px-4 h-9 text-xs font-bold uppercase tracking-wide"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleSaveProfile}
+                  className="bg-orange-500 text-white hover:bg-orange-600 rounded-sm px-4 h-9 text-xs font-bold uppercase tracking-wide"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Guardar
+                </Button>
+              </div>
+            )}
+          </div>
 
           <div className="space-y-4">
-            <div>
-              <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-1">Nombre</div>
-              <div className="text-lg font-semibold text-slate-900">{user?.name}</div>
-            </div>
+            {editing ? (
+              <>
+                <div>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">
+                    Nombre
+                  </Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="h-10 rounded-sm border-slate-300 bg-slate-50 focus:bg-white text-sm"
+                  />
+                </div>
 
-            <div>
-              <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-1">Email</div>
-              <div className="text-sm text-slate-700 font-mono">{user?.email}</div>
-            </div>
+                <div>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">
+                    Email
+                  </Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="h-10 rounded-sm border-slate-300 bg-slate-50 focus:bg-white font-mono text-sm"
+                  />
+                </div>
 
-            <div>
-              <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-1">Rol</div>
-              <div className="inline-block bg-slate-100 text-slate-700 px-3 py-1 rounded-sm text-sm font-medium">
-                {getRoleLabel(user?.role)}
-              </div>
-            </div>
+                <div>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">
+                    Cargo / Rol
+                  </Label>
+                  <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                    <SelectTrigger className="h-10 rounded-sm border-slate-300 bg-slate-50 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="designer">Diseñador</SelectItem>
+                      <SelectItem value="manufacturing_chief">Jefe de Fabricación</SelectItem>
+                      <SelectItem value="purchasing">Adquisiciones</SelectItem>
+                      <SelectItem value="warehouse">Bodega</SelectItem>
+                      <SelectItem value="superadmin">Superadministrador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-1">Nombre</div>
+                  <div className="text-lg font-semibold text-slate-900">{user?.name}</div>
+                </div>
 
-            <div>
-              <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-1">Cuenta Creada</div>
-              <div className="text-sm text-slate-600 font-mono">
-                {user?.created_at ? new Date(user.created_at).toLocaleString('es-ES') : 'N/A'}
-              </div>
-            </div>
+                <div>
+                  <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-1">Email</div>
+                  <div className="text-sm text-slate-700 font-mono">{user?.email}</div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-1">Rol</div>
+                  <div className="inline-block bg-slate-100 text-slate-700 px-3 py-1 rounded-sm text-sm font-medium">
+                    {getRoleLabel(user?.role)}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-1">Cuenta Creada</div>
+                  <div className="text-sm text-slate-600 font-mono">
+                    {user?.created_at ? new Date(user.created_at).toLocaleString('es-ES') : 'N/A'}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
