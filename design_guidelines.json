@@ -1,0 +1,159 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "E1 Industrial",
+      "tone": "Precision, Efficiency, Durability",
+      "style": "Modern Industrial / Technical SaaS",
+      "mode": "light"
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Barlow Condensed, sans-serif",
+        "body": "Manrope, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-4xl font-bold tracking-tight uppercase",
+        "h2": "text-3xl font-semibold tracking-tight uppercase",
+        "h3": "text-xl font-semibold tracking-wide uppercase",
+        "body": "text-sm font-medium leading-relaxed",
+        "caption": "text-xs font-mono text-muted-foreground uppercase tracking-widest"
+      },
+      "imports": [
+        "@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');"
+      ]
+    },
+    "colors": {
+      "primary": {
+        "DEFAULT": "#0F172A",
+        "foreground": "#F8FAFC"
+      },
+      "secondary": {
+        "DEFAULT": "#F97316",
+        "foreground": "#FFFFFF"
+      },
+      "accent": {
+        "DEFAULT": "#0EA5E9",
+        "foreground": "#FFFFFF"
+      },
+      "background": "#F1F5F9",
+      "surface": "#FFFFFF",
+      "border": "#CBD5E1",
+      "muted": "#64748B",
+      "status": {
+        "success": "#22C55E",
+        "warning": "#EAB308",
+        "error": "#EF4444",
+        "info": "#3B82F6"
+      }
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-8",
+      "section_gap": "gap-6",
+      "component_radius": "rounded-sm"
+    },
+    "shadows": {
+      "card": "shadow-sm",
+      "hover": "shadow-md",
+      "modal": "shadow-xl"
+    }
+  },
+  "layout_strategies": {
+    "dashboard": {
+      "type": "bento_grid",
+      "grid_cols": "grid-cols-1 md:grid-cols-12",
+      "gap": "gap-4 md:gap-6",
+      "rules": [
+        "Containers must have visible borders (border-slate-200)",
+        "Use white background for cards to contrast with light grey app background",
+        "Headers inside cards should use caption style (uppercase, mono)",
+        "Dense layout: Minimize whitespace inside data cards"
+      ]
+    },
+    "gantt": {
+      "type": "full_width_fluid",
+      "container_class": "w-full h-[calc(100vh-12rem)] border border-slate-300 bg-white rounded-sm overflow-hidden",
+      "header_class": "bg-slate-100 border-b border-slate-200 h-12 flex items-center px-4 font-mono text-xs uppercase"
+    },
+    "forms": {
+      "style": "technical",
+      "input_class": "h-10 rounded-sm border-slate-300 bg-slate-50 focus:bg-white focus:ring-offset-0 focus:border-orange-500 font-mono text-sm",
+      "label_class": "text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-slate-900 text-white hover:bg-slate-800 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs transition-all active:scale-95",
+      "secondary": "bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs transition-all active:scale-95",
+      "action": "bg-orange-500 text-white hover:bg-orange-600 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs shadow-sm hover:shadow-md transition-all active:scale-95",
+      "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-sm px-4 h-9 font-medium text-xs uppercase tracking-wide transition-colors"
+    },
+    "cards": {
+      "base": "bg-white border border-slate-200 rounded-sm p-5 flex flex-col relative overflow-hidden group hover:border-slate-300 transition-colors",
+      "metric": "flex flex-col justify-between h-full"
+    },
+    "badges": {
+      "base": "inline-flex items-center rounded-sm px-2 py-1 text-xs font-mono font-medium ring-1 ring-inset",
+      "success": "bg-green-50 text-green-700 ring-green-600/20",
+      "warning": "bg-yellow-50 text-yellow-800 ring-yellow-600/20",
+      "error": "bg-red-50 text-red-700 ring-red-600/20",
+      "neutral": "bg-slate-50 text-slate-600 ring-slate-500/10"
+    },
+    "tables": {
+      "header": "bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider border-b border-slate-200 h-10 px-4 text-left",
+      "row": "border-b border-slate-100 hover:bg-slate-50/50 transition-colors h-12 px-4 text-sm text-slate-700 font-medium",
+      "cell": "px-4 py-2 align-middle"
+    }
+  },
+  "visual_enhancers": {
+    "textures": [
+      "Use subtle noise texture opacity-5 on dark backgrounds",
+      "Use dashed borders for 'Draft' or 'Pending' states"
+    ],
+    "micro_interactions": [
+      "Buttons active state: scale-95",
+      "Inputs focus: border-orange-500",
+      "Table rows hover: bg-slate-50"
+    ],
+    "icons": "Use Lucide React icons. Stroke width 1.5px for refined look. Size 16px or 20px standard."
+  },
+  "assets": {
+    "images": {
+      "login_bg": {
+        "url": "https://images.unsplash.com/photo-1570619511366-24c19247c731?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Modern minimal factory interior",
+        "usage": "Full screen background with multiply blend mode overlay"
+      },
+      "empty_state": {
+        "url": "https://images.unsplash.com/photo-1616873424982-e406f6af8eef?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Clean workspace",
+        "usage": "Empty dashboard state"
+      },
+      "user_avatars": [
+        "https://images.pexels.com/photos/32845692/pexels-photo-32845692.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+      ]
+    }
+  },
+  "universal_guidelines": [
+    "Do not use gradients for backgrounds. Use flat solid colors.",
+    "Use 1px borders everywhere. The industrial look relies on clear separation.",
+    "Data density should be high. Do not use excessive padding in tables.",
+    "All dates must be formatted in monospace font.",
+    "Use uppercase text for all labels and headers (text-xs uppercase tracking-wider).",
+    "Interactive elements must have a cursor-pointer.",
+    "Scrollbars should be thin and styled (slate-300 thumb).",
+    "Always check contrast. If using orange text, ensure it is dark enough (orange-600) on white.",
+    "Use 'sonner' for notifications.",
+    "Use 'recharts' for charts with custom tooltips (no default shadow)."
+  ],
+  "instructions_to_main_agent": [
+    "Install 'gantt-task-react' for the Gantt chart functionality.",
+    "Install 'recharts' for the KPI dashboard.",
+    "Install 'lucide-react' for icons.",
+    "Install 'date-fns' for date manipulation.",
+    "Install 'clsx' and 'tailwind-merge' for class handling.",
+    "Update tailwind.config.js to include the custom colors and font families defined here.",
+    "Create a layout wrapper 'DashboardLayout' that includes the sidebar and topbar.",
+    "Ensure the 'Login' page uses the industrial background image provided."
+  ]
+}
