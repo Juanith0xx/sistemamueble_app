@@ -913,7 +913,7 @@ async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)
         ["Fecha Estimada Fin:", study["estimated_end_date"][:10] if study.get("estimated_end_date") else "Por definir"],
     ]
     
-    info_table = Table(info_data, colWidths=[2*inch, 4.5*inch])
+    info_table = Table(info_data, colWidths=[2.5*inch, 7.5*inch])
     info_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f1f5f9')),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#1e293b')),
