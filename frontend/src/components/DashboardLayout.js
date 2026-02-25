@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Bell, LogOut, Menu, X, Factory, LayoutDashboard, FolderKanban, GanttChart, ShoppingCart, Shield } from 'lucide-react';
+import { Bell, LogOut, Menu, X, Factory, LayoutDashboard, FolderKanban, GanttChart, ShoppingCart, Shield, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { Badge } from '@/components/ui/badge';
