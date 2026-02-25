@@ -176,6 +176,24 @@ class Notification(BaseModel):
     read: bool
     created_at: str
 
+class ObservationCreate(BaseModel):
+    project_id: str
+    stage: str
+    content: str
+    recipients: List[str]  # List of user_ids
+
+class Observation(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    observation_id: str
+    project_id: str
+    stage: str
+    content: str
+    created_by: str
+    created_by_name: Optional[str] = None
+    created_by_role: Optional[str] = None
+    recipients: List[str]
+    created_at: str
+
 # ==================== AUTH HELPERS ====================
 
 def verify_password(plain_password, hashed_password):
