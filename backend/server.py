@@ -609,11 +609,22 @@ async def upload_document_local(
     project_id: str,
     stage: str,
     file: UploadFile = File(...),
+    document_type: str = "general",
     user: User = Depends(get_current_user)
 ):
     project = await db.projects.find_one({"project_id": project_id})
     if not project:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    
+    # Validar que el listado de materiales sea un archivo Excel
+    if document_type == "materials_list":
+        valid_extensions = ['.xls', '.xlsx']
+        file_ext = Path(file.filename).suffix.lower()
+        if file_ext not in valid_extensions:
+            raise HTTPException(
+                status_code=400, 
+                detail="El listado de materiales debe ser un archivo Excel (.xls o .xlsx)"
+            )
     
     try:
         # Crear carpeta del proyecto si no existe
@@ -636,6 +647,7 @@ async def upload_document_local(
             "project_id": project_id,
             "filename": file.filename,
             "file_type": file.content_type,
+            "document_type": document_type,
             "storage_type": "local",
             "local_path": str(file_path),
             "unique_filename": unique_filename,
