@@ -95,6 +95,7 @@ class User(BaseModel):
     name: str
     role: str
     avatar_url: Optional[str] = None
+    stars: int = 0  # Estrellas de recompensa por completar antes del plazo
     created_at: str
 
 class Token(BaseModel):
