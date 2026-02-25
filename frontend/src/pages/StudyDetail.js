@@ -297,7 +297,7 @@ const StudyDetail = () => {
                       <h3 className="font-semibold text-sm text-slate-900">{stage.label}</h3>
                       {stage.data.estimated_by && (
                         <p className="text-xs text-slate-500 mt-1">
-                          Estimado por: {stage.data.estimated_by} el {new Date(stage.data.estimated_at).toLocaleDateString('es-ES')}
+                          Estimado el {new Date(stage.data.estimated_at).toLocaleDateString('es-ES')}
                         </p>
                       )}
                     </div>
