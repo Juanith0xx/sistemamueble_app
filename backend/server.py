@@ -933,9 +933,9 @@ async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)
         elements.append(Paragraph("DIAGRAMA DE GANTT", styles['Heading2']))
         elements.append(Spacer(1, 0.2*inch))
         
-        # Create Gantt drawing
-        gantt_width = 6.5 * inch
-        gantt_height = 3.5 * inch
+        # Create Gantt drawing - wider for landscape
+        gantt_width = 10 * inch
+        gantt_height = 3 * inch
         d = Drawing(gantt_width, gantt_height)
         
         stages_info = [
