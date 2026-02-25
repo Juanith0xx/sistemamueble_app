@@ -10,22 +10,22 @@ Aplicación web multi-usuario para gestionar el ciclo de vida de proyectos de mu
 - Sistema de observaciones con alertas
 - Dashboard con semáforo de estados
 - Estudios de proyectos para simulación de tiempos
-- Exportación a PDF de simulaciones
+- Exportación a PDF de simulaciones (formato horizontal)
 - Branding personalizado (Robfu)
 
 ## Roles de Usuario
 | Rol | Permisos |
 |-----|----------|
 | Superadministrador | Dashboard KPIs, gestión total |
-| Diseñador | Crear proyectos, cargar diseños |
-| Jefe de Fabricación | Validación técnica |
+| Diseñador | Crear proyectos/estudios, cargar diseños, estimar diseño y fabricación |
+| Jefe de Fabricación | Validación técnica, estimar validación |
 | Adquisiciones | Órdenes de compra, estimar tiempos de compras y bodega |
-| Bodega | Confirmar recepción de materiales |
+| Bodega | Confirmar recepción de materiales, estimar tiempo de bodega |
 
 ## Stack Tecnológico
 - **Frontend:** React 19, TailwindCSS, Shadcn/UI, react-google-charts
 - **Backend:** FastAPI, MongoDB (Motor async), JWT
-- **PDF:** ReportLab
+- **PDF:** ReportLab (formato landscape)
 
 ## Funcionalidades Implementadas
 
@@ -43,8 +43,10 @@ Aplicación web multi-usuario para gestionar el ciclo de vida de proyectos de mu
 ### Estudios de Proyectos (Completado - Feb 25, 2026)
 - Crear simulaciones de proyectos
 - Estimaciones por etapa según rol
+- **Rol Compras puede editar etapas de Compras y Bodega**
+- Todos los roles pueden ver todos los estudios para colaborar
 - Gantt visual de simulación
-- Exportación PDF con Gantt incluido
+- Exportación PDF en formato horizontal con Gantt incluido
 - Aprobación para convertir en proyecto real
 
 ### Órdenes de Compra (Completado)
@@ -69,3 +71,4 @@ Aplicación web multi-usuario para gestionar el ciclo de vida de proyectos de mu
 - URL Preview: https://workflow-production.preview.emergentagent.com
 - MongoDB excluye _id en todas las respuestas
 - Archivos se almacenan en /app/uploads/
+- PDF de estudios en formato landscape (horizontal) para mejor visualización del Gantt
