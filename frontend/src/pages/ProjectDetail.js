@@ -152,7 +152,8 @@ const ProjectDetail = () => {
       'application/vnd.ms-excel': ['.xls'],
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
     },
-    maxFiles: 1
+    maxFiles: 10 - documents.length,
+    multiple: true
   });
 
   const handleAdvanceStage = async () => {
