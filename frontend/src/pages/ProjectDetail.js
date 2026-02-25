@@ -502,25 +502,33 @@ const ProjectDetail = () => {
         )}
 
         {/* Complete Early Button */}
-        {canCompleteEarly() && getDaysRemaining() !== null && (
+        {canCompleteEarly() && (
           <Dialog open={earlyCompleteDialogOpen} onOpenChange={setEarlyCompleteDialogOpen}>
             <DialogTrigger asChild>
               <Button
                 data-testid="complete-early-button"
-                className={`${getDaysRemaining() > 0 ? 'bg-green-500 hover:bg-green-600' : 'bg-slate-500 hover:bg-slate-600'} text-white rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs shadow-sm hover:shadow-md transition-all active:scale-95`}
+                className={`${hasEstimatedTime() && getDaysRemaining() > 0 ? 'bg-green-500 hover:bg-green-600' : 'bg-purple-500 hover:bg-purple-600'} text-white rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs shadow-sm hover:shadow-md transition-all active:scale-95`}
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
-                {getDaysRemaining() > 0 ? `Completar (${getDaysRemaining()} días antes)` : 'Completar Etapa'}
+                {hasEstimatedTime() && getDaysRemaining() > 0 
+                  ? `Completar (${getDaysRemaining()} días antes)` 
+                  : project.status === 'manufacturing' 
+                    ? 'Finalizar Proyecto' 
+                    : 'Completar Etapa'}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md bg-white">
               <DialogHeader>
                 <DialogTitle className="font-heading text-xl uppercase tracking-tight">
-                  {getDaysRemaining() > 0 ? '🎉 ¡Completar Antes del Plazo!' : 'Completar Etapa'}
+                  {hasEstimatedTime() && getDaysRemaining() > 0 
+                    ? '🎉 ¡Completar Antes del Plazo!' 
+                    : project.status === 'manufacturing'
+                      ? '🏭 Finalizar Proyecto'
+                      : 'Completar Etapa'}
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                {getDaysRemaining() > 0 ? (
+                {hasEstimatedTime() && getDaysRemaining() > 0 ? (
                   <div className="p-4 bg-green-50 border border-green-200 rounded-sm">
                     <p className="text-sm text-green-800 mb-2">
                       <strong>¡Excelente trabajo!</strong> Estás a punto de completar esta etapa con <strong>{getDaysRemaining()} días de anticipación</strong>.
@@ -537,6 +545,15 @@ const ProjectDetail = () => {
                       </span>
                     </div>
                   </div>
+                ) : project.status === 'manufacturing' ? (
+                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-sm">
+                    <p className="text-sm text-purple-800">
+                      <strong>¡Felicitaciones!</strong> Estás a punto de marcar este proyecto como <strong>completado</strong>.
+                    </p>
+                    <p className="text-sm text-purple-700 mt-2">
+                      El administrador será notificado de la finalización.
+                    </p>
+                  </div>
                 ) : (
                   <p className="text-sm text-slate-600">
                     ¿Estás seguro de completar esta etapa?
@@ -545,9 +562,9 @@ const ProjectDetail = () => {
                 <Button
                   onClick={handleCompleteEarly}
                   disabled={completingEarly}
-                  className="w-full bg-green-600 text-white hover:bg-green-700 rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs transition-all active:scale-95"
+                  className={`w-full ${project.status === 'manufacturing' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'} text-white rounded-sm px-6 h-10 font-bold uppercase tracking-wide text-xs transition-all active:scale-95`}
                 >
-                  {completingEarly ? 'Completando...' : 'Confirmar y Completar'}
+                  {completingEarly ? 'Completando...' : project.status === 'manufacturing' ? 'Finalizar Proyecto' : 'Confirmar y Completar'}
                 </Button>
               </div>
             </DialogContent>
