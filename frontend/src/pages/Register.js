@@ -49,8 +49,8 @@ const Register = () => {
       >
         <div className="absolute inset-0 bg-slate-900/70" />
         <div className="relative z-10 flex flex-col justify-center px-12 text-white">
-          <div className="flex items-center gap-3 mb-6">
-            <Factory className="w-12 h-12 text-orange-500" />
+          <div className="mb-6">
+            <img src="/robfu-logo.png" alt="Robfu" className="h-20 mb-4" />
             <h1 className="font-heading text-5xl font-bold uppercase tracking-tight">Gantt Pro</h1>
           </div>
           <p className="text-xl text-slate-300 font-medium leading-relaxed">
