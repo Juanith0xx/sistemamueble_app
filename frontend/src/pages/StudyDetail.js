@@ -117,14 +117,10 @@ const StudyDetail = () => {
   };
 
   const canEditStage = (stage) => {
-    const permissions = {
-      design: ['designer', 'superadmin'],
-      validation: ['manufacturing_chief', 'superadmin'],
-      purchasing: ['purchasing', 'superadmin'],
-      warehouse: ['purchasing', 'warehouse', 'superadmin'],  // Compras puede editar ambos
-      manufacturing: ['designer', 'superadmin']
-    };
-    return permissions[stage]?.includes(user?.role);
+    // En estudios de proyectos (simulaciones), todos los usuarios pueden 
+    // editar todas las etapas para hacer estimaciones colaborativas
+    const allowedRoles = ['designer', 'manufacturing_chief', 'purchasing', 'warehouse', 'superadmin'];
+    return allowedRoles.includes(user?.role);
   };
 
   const getStatusBadge = (status) => {
