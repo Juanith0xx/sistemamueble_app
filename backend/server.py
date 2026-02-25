@@ -753,17 +753,17 @@ async def update_stage_estimate(
     
     # Validate stage permissions
     stage_permissions = {
-        "design": UserRole.DESIGNER,
-        "validation": UserRole.MANUFACTURING_CHIEF,
-        "purchasing": UserRole.PURCHASING,
-        "warehouse": UserRole.WAREHOUSE,
-        "manufacturing": UserRole.DESIGNER
+        "design": [UserRole.DESIGNER],
+        "validation": [UserRole.MANUFACTURING_CHIEF],
+        "purchasing": [UserRole.PURCHASING],
+        "warehouse": [UserRole.PURCHASING, UserRole.WAREHOUSE],  # Compras también puede editar
+        "manufacturing": [UserRole.DESIGNER]
     }
     
     if stage not in stage_permissions:
         raise HTTPException(status_code=400, detail="Etapa inválida")
     
-    if user.role != UserRole.SUPERADMIN and user.role != stage_permissions[stage]:
+    if user.role != UserRole.SUPERADMIN and user.role not in stage_permissions[stage]:
         raise HTTPException(status_code=403, detail="No tienes permiso para estimar esta etapa")
     
     stage_key = f"{stage}_stage"
