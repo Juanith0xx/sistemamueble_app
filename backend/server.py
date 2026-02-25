@@ -1014,7 +1014,7 @@ async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)
             estimated_by
         ])
     
-    stages_table = Table(stages_data, colWidths=[1.8*inch, 1.2*inch, 2.2*inch, 1.3*inch])
+    stages_table = Table(stages_data, colWidths=[2.5*inch, 1.5*inch, 4*inch, 2*inch])
     stages_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f97316')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
