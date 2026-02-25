@@ -869,10 +869,10 @@ async def export_study_pdf(study_id: str, user: User = Depends(get_current_user)
     from reportlab.lib.pagesizes import A4
     from reportlab.lib import colors
     from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Drawing
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.enums import TA_CENTER
-    from reportlab.graphics.shapes import Rect, String
+    from reportlab.graphics.shapes import Drawing, Rect, String
     from reportlab.graphics import renderPDF
     import tempfile
     
