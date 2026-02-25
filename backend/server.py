@@ -726,11 +726,9 @@ async def create_study(study_input: ProjectStudyCreate, user: User = Depends(get
 
 @api_router.get("/studies", response_model=List[ProjectStudy])
 async def get_studies(user: User = Depends(get_current_user)):
-    query = {}
-    if user.role != UserRole.SUPERADMIN:
-        query["created_by"] = user.user_id
-    
-    studies = await db.studies.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    # All users can see all studies to enable collaboration
+    # Each role can edit only their allowed stages
+    studies = await db.studies.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return [ProjectStudy(**s) for s in studies]
 
 @api_router.get("/studies/{study_id}", response_model=ProjectStudy)
