@@ -288,6 +288,58 @@ const ProjectDetail = () => {
     }
   };
 
+  // Completar etapa anticipadamente
+  const handleCompleteEarly = async () => {
+    setCompletingEarly(true);
+    try {
+      const response = await axios.post(`${API}/projects/${id}/complete-early`);
+      const { stars_earned, days_early, is_early, message } = response.data;
+      
+      if (is_early) {
+        toast.success(`🎉 ${message}`, { duration: 5000 });
+      } else {
+        toast.success('Etapa completada exitosamente');
+      }
+      
+      setEarlyCompleteDialogOpen(false);
+      fetchProjectData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al completar etapa');
+    } finally {
+      setCompletingEarly(false);
+    }
+  };
+
+  // Verificar si puede completar anticipadamente
+  const canCompleteEarly = () => {
+    if (!user || !project) return false;
+    
+    const currentStage = project[`${project.status}_stage`];
+    if (!currentStage?.end_date || !currentStage?.estimated_days) return false;
+    
+    const stagePermissions = {
+      'design': 'designer',
+      'validation': 'manufacturing_chief',
+      'purchasing': 'purchasing',
+      'warehouse': 'warehouse',
+      'manufacturing': 'designer'
+    };
+    
+    return stagePermissions[project.status] === user.role || user.role === 'superadmin';
+  };
+
+  // Calcular días restantes para la etapa actual
+  const getDaysRemaining = () => {
+    if (!project) return null;
+    const currentStage = project[`${project.status}_stage`];
+    if (!currentStage?.end_date) return null;
+    
+    const endDate = new Date(currentStage.end_date);
+    const now = new Date();
+    const diff = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+    return diff;
+  };
+
   const canAdvanceStage = () => {
     if (!user || !project) return false;
     
