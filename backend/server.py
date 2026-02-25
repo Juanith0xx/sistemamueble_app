@@ -901,6 +901,38 @@ async def get_all_users(user: User = Depends(get_current_user)):
     users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
     return users
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+
+@api_router.put("/users/me", response_model=User)
+async def update_user_profile(user_update: UserUpdate, user: User = Depends(get_current_user)):
+    update_data = {}
+    
+    if user_update.name:
+        update_data["name"] = user_update.name
+    
+    if user_update.email:
+        # Check if email already exists for another user
+        existing = await db.users.find_one({"email": user_update.email, "user_id": {"$ne": user.user_id}})
+        if existing:
+            raise HTTPException(status_code=400, detail="El email ya está en uso")
+        update_data["email"] = user_update.email
+    
+    if user_update.role:
+        update_data["role"] = user_update.role
+    
+    if update_data:
+        await db.users.update_one(
+            {"user_id": user.user_id},
+            {"$set": update_data}
+        )
+    
+    # Fetch updated user
+    updated_user = await db.users.find_one({"user_id": user.user_id}, {"_id": 0, "password_hash": 0})
+    return User(**updated_user)
+
 # ==================== GOOGLE DRIVE ROUTES ====================
 
 @api_router.get("/drive/connect")
