@@ -169,14 +169,15 @@ const Projects = () => {
               <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Proyecto</th>
               <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Cliente</th>
               <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Estado</th>
-              <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Creado</th>
+              <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Creado por</th>
+              <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Fecha</th>
               <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Acción</th>
             </tr>
           </thead>
           <tbody>
             {projects.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-8 text-slate-500 text-sm">No hay proyectos</td>
+                <td colSpan={6} className="text-center py-8 text-slate-500 text-sm">No hay proyectos</td>
               </tr>
             ) : (
               projects.map((project) => {
@@ -193,6 +194,9 @@ const Projects = () => {
                       <Badge className={`${statusInfo.className} inline-flex items-center rounded-sm px-2 py-1 text-xs font-mono font-medium ring-1 ring-inset`}>
                         {statusInfo.label}
                       </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-700">
+                      {project.created_by_name || 'Desconocido'}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500 font-mono">
                       {new Date(project.created_at).toLocaleDateString('es-ES')}
