@@ -403,7 +403,7 @@ const AdminPanel = () => {
       </div>
 
       {/* Delays by Stage Chart */}
-      <div className="bg-white border border-slate-200 rounded-sm p-6">
+      <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
         <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-4">
           Retrasos por Departamento
         </div>
@@ -428,6 +428,112 @@ const AdminPanel = () => {
             <Bar dataKey="retrasos" fill="#F97316" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* User Management Section */}
+      <div className="bg-white border border-slate-200 rounded-sm p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-purple-100 rounded-sm flex items-center justify-center">
+              <Users className="w-5 h-5 text-purple-600" />
+            </div>
+            <div>
+              <div className="text-xs font-mono uppercase tracking-widest text-slate-400">Gestión de Usuarios</div>
+              <div className="text-sm text-slate-600">{users.length} usuarios registrados</div>
+            </div>
+          </div>
+        </div>
+
+        {loadingUsers ? (
+          <div className="text-center py-8 text-slate-500 text-sm">Cargando usuarios...</div>
+        ) : (
+          <div className="space-y-2">
+            {users.map((u) => {
+              const roleInfo = getRoleBadge(u.role);
+              const isCurrentUser = u.user_id === user?.user_id;
+              const isSuperadmin = u.role === 'superadmin';
+              
+              return (
+                <div
+                  key={u.user_id}
+                  className={`flex items-center justify-between p-4 rounded-sm border transition-colors ${
+                    u.is_active !== false 
+                      ? 'bg-white border-slate-200 hover:bg-slate-50' 
+                      : 'bg-red-50 border-red-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    {u.avatar_url ? (
+                      <img
+                        src={`${process.env.REACT_APP_BACKEND_URL}${u.avatar_url}`}
+                        alt={u.name}
+                        className="w-10 h-10 rounded-sm object-cover border border-slate-200"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-sm bg-slate-200 flex items-center justify-center">
+                        <span className="text-slate-600 font-bold text-sm">
+                          {u.name?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm text-slate-900">{u.name}</span>
+                        {isSuperadmin && (
+                          <Shield className="w-4 h-4 text-purple-500" />
+                        )}
+                        {isCurrentUser && (
+                          <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-sm">(Tú)</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-500">{u.email}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Badge className={`${roleInfo.className} rounded-sm px-2 py-1 text-xs font-medium`}>
+                      {roleInfo.label}
+                    </Badge>
+                    
+                    {u.is_active !== false ? (
+                      <span className="flex items-center gap-1 text-xs text-green-600">
+                        <UserCheck className="w-4 h-4" />
+                        Activo
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-xs text-red-600">
+                        <UserX className="w-4 h-4" />
+                        Bloqueado
+                      </span>
+                    )}
+                    
+                    {!isCurrentUser && !isSuperadmin && (
+                      <Button
+                        onClick={() => toggleUserAccess(u.user_id)}
+                        disabled={togglingUser === u.user_id}
+                        variant="outline"
+                        size="sm"
+                        className={`rounded-sm h-8 px-3 text-xs font-bold uppercase ${
+                          u.is_active !== false
+                            ? 'text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200'
+                            : 'text-green-600 hover:bg-green-50 hover:text-green-700 border-green-200'
+                        }`}
+                      >
+                        {togglingUser === u.user_id ? (
+                          'Procesando...'
+                        ) : u.is_active !== false ? (
+                          'Bloquear'
+                        ) : (
+                          'Activar'
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
