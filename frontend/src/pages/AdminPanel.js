@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Chart } from 'react-google-charts';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { AlertCircle, CheckCircle, Clock, TrendingUp, X, Eye, ChevronRight } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, TrendingUp, X, Eye, ChevronRight, Users, UserCheck, UserX, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,9 @@ const AdminPanel = () => {
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [ganttData, setGanttData] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [togglingUser, setTogglingUser] = useState(null);
 
   useEffect(() => {
     if (user?.role !== 'superadmin') {
@@ -27,6 +30,7 @@ const AdminPanel = () => {
       return;
     }
     fetchKPIs();
+    fetchUsers();
   }, [user]);
 
   const fetchKPIs = async () => {
@@ -39,6 +43,43 @@ const AdminPanel = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const response = await axios.get(`${API}/admin/users`);
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast.error('Error al cargar usuarios');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const toggleUserAccess = async (userId) => {
+    setTogglingUser(userId);
+    try {
+      const response = await axios.put(`${API}/admin/users/${userId}/toggle-access`);
+      toast.success(response.data.message);
+      fetchUsers(); // Refresh user list
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al cambiar estado del usuario');
+    } finally {
+      setTogglingUser(null);
+    }
+  };
+
+  const getRoleBadge = (role) => {
+    const roleMap = {
+      superadmin: { label: 'Administrador', className: 'bg-purple-100 text-purple-700' },
+      designer: { label: 'Diseñador', className: 'bg-blue-100 text-blue-700' },
+      manufacturing_chief: { label: 'Jefe Fabricación', className: 'bg-cyan-100 text-cyan-700' },
+      purchasing: { label: 'Compras', className: 'bg-yellow-100 text-yellow-700' },
+      warehouse: { label: 'Bodega', className: 'bg-orange-100 text-orange-700' }
+    };
+    return roleMap[role] || { label: role, className: 'bg-slate-100 text-slate-700' };
   };
 
   const handleFilterClick = async (filterType) => {
