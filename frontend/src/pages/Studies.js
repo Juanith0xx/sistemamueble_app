@@ -148,14 +148,15 @@ const Studies = () => {
               <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Cliente</th>
               <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Estado</th>
               <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Duración</th>
-              <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Creado</th>
+              <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Creado por</th>
+              <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Fecha</th>
               <th className="bg-slate-50 text-slate-500 font-mono text-xs uppercase tracking-wider text-left h-10 px-4">Acción</th>
             </tr>
           </thead>
           <tbody>
             {studies.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-slate-500 text-sm">No hay estudios</td>
+                <td colSpan={7} className="text-center py-8 text-slate-500 text-sm">No hay estudios</td>
               </tr>
             ) : (
               studies.map((study) => {
@@ -173,11 +174,15 @@ const Studies = () => {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-sm font-mono text-slate-700">{study.total_estimated_days} días</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">
+                      {study.created_by_name || 'Desconocido'}
+                    </td>
                     <td className="px-4 py-3 text-xs text-slate-500 font-mono">
                       {new Date(study.created_at).toLocaleDateString('es-ES')}
                     </td>
                     <td className="px-4 py-3">
                       <Button
+                        data-testid={`view-study-${study.study_id}`}
                         onClick={() => navigate(`/studies/${study.study_id}`)}
                         variant="ghost"
                         size="sm"
