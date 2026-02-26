@@ -383,6 +383,10 @@ async def login(credentials: UserLogin):
     if not user_doc or not verify_password(credentials.password, user_doc["password_hash"]):
         raise HTTPException(status_code=401, detail="Email o contraseña incorrectos")
     
+    # Verificar si el usuario está activo
+    if not user_doc.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Tu cuenta ha sido desactivada. Contacta al administrador.")
+    
     access_token = create_access_token(
         data={"sub": user_doc["user_id"]},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -393,6 +397,7 @@ async def login(credentials: UserLogin):
         email=user_doc["email"],
         name=user_doc["name"],
         role=user_doc["role"],
+        is_active=user_doc.get("is_active", True),
         created_at=user_doc["created_at"]
     )
     
