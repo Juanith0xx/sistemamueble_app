@@ -407,6 +407,52 @@ async def login(credentials: UserLogin):
 async def get_me(user: User = Depends(get_current_user)):
     return user
 
+# ==================== USER MANAGEMENT ROUTES (ADMIN) ====================
+
+@api_router.get("/admin/users")
+async def get_all_users(user: User = Depends(get_current_user)):
+    """Obtener lista de todos los usuarios (solo admin)"""
+    if user.role != UserRole.SUPERADMIN:
+        raise HTTPException(status_code=403, detail="Solo el administrador puede ver la lista de usuarios")
+    
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    
+    # Add is_active field if not present
+    for u in users:
+        if "is_active" not in u:
+            u["is_active"] = True
+    
+    return users
+
+@api_router.put("/admin/users/{user_id}/toggle-access")
+async def toggle_user_access(user_id: str, user: User = Depends(get_current_user)):
+    """Activar/desactivar acceso de un usuario (solo admin)"""
+    if user.role != UserRole.SUPERADMIN:
+        raise HTTPException(status_code=403, detail="Solo el administrador puede modificar el acceso de usuarios")
+    
+    # No permitir desactivarse a sí mismo
+    if user_id == user.user_id:
+        raise HTTPException(status_code=400, detail="No puedes desactivar tu propia cuenta")
+    
+    target_user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # No permitir desactivar a otros superadmin
+    if target_user.get("role") == UserRole.SUPERADMIN:
+        raise HTTPException(status_code=400, detail="No puedes desactivar a otro administrador")
+    
+    current_status = target_user.get("is_active", True)
+    new_status = not current_status
+    
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"is_active": new_status}}
+    )
+    
+    action = "activado" if new_status else "desactivado"
+    return {"message": f"Usuario {action} exitosamente", "is_active": new_status}
+
 # ==================== PROJECT ROUTES ====================
 
 @api_router.post("/projects", response_model=Project)
