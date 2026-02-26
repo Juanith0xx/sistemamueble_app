@@ -355,6 +355,7 @@ async def register(user_input: UserRegister):
         "password_hash": get_password_hash(user_input.password),
         "name": user_input.name,
         "role": user_input.role,
+        "is_active": True,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -370,6 +371,7 @@ async def register(user_input: UserRegister):
         email=user_input.email,
         name=user_input.name,
         role=user_input.role,
+        is_active=True,
         created_at=user_doc["created_at"]
     )
     
