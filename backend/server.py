@@ -451,7 +451,16 @@ async def get_projects(status: Optional[str] = None, user: User = Depends(get_cu
         query["status"] = status
     
     projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
-    return [Project(**p) for p in projects]
+    
+    # Add creator name to each project
+    result = []
+    for p in projects:
+        project_dict = dict(p)
+        creator = await db.users.find_one({"user_id": p.get("created_by")}, {"_id": 0, "name": 1})
+        project_dict["created_by_name"] = creator["name"] if creator else "Desconocido"
+        result.append(project_dict)
+    
+    return result
 
 @api_router.get("/projects/{project_id}", response_model=Project)
 async def get_project(project_id: str, user: User = Depends(get_current_user)):
@@ -973,7 +982,16 @@ async def get_studies(user: User = Depends(get_current_user)):
     # All users can see all studies to enable collaboration
     # Each role can edit only their allowed stages
     studies = await db.studies.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    return [ProjectStudy(**s) for s in studies]
+    
+    # Add creator name to each study
+    result = []
+    for s in studies:
+        study_dict = dict(s)
+        creator = await db.users.find_one({"user_id": s.get("created_by")}, {"_id": 0, "name": 1})
+        study_dict["created_by_name"] = creator["name"] if creator else "Desconocido"
+        result.append(study_dict)
+    
+    return result
 
 @api_router.get("/studies/{study_id}", response_model=ProjectStudy)
 async def get_study(study_id: str, user: User = Depends(get_current_user)):
