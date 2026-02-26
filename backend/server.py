@@ -440,7 +440,7 @@ async def create_project(project_input: ProjectCreate, user: User = Depends(get_
     
     return Project(**project_doc)
 
-@api_router.get("/projects", response_model=List[Project])
+@api_router.get("/projects")
 async def get_projects(status: Optional[str] = None, user: User = Depends(get_current_user)):
     query = {}
     
