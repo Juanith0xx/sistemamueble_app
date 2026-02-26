@@ -289,11 +289,11 @@ const ProjectDetail = () => {
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
-      toast.success('Orden de Compra subida exitosamente');
+      toast.success('Orden de Compra Materiales subida exitosamente');
       setPurchaseOrderFile(null);
       fetchProjectData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Error al subir Orden de Compra');
+      toast.error(error.response?.data?.detail || 'Error al subir Orden de Compra Materiales');
     } finally {
       setUploadingPO(false);
     }
@@ -749,7 +749,7 @@ const ProjectDetail = () => {
               </div>
               <div>
                 <div className="text-xs font-mono uppercase tracking-widest text-slate-400">
-                  Orden de Compra (OC)
+                  Orden de Compra Materiales
                 </div>
                 <div className="text-xs text-blue-600">
                   {project.status === 'purchasing' ? 'Requerido para avanzar' : 'Documento de compras'}
@@ -782,7 +782,7 @@ const ProjectDetail = () => {
             <div className="space-y-3">
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-sm">
                 <p className="text-sm text-blue-800 mb-3">
-                  <strong>⚠️ Acción requerida:</strong> Debe subir la Orden de Compra (OC) antes de poder avanzar a la etapa de Bodega.
+                  <strong>⚠️ Acción requerida:</strong> Debe subir la Orden de Compra Materiales antes de poder avanzar a la etapa de Bodega.
                 </p>
                 <div className="flex items-center gap-3">
                   <Input
@@ -815,8 +815,8 @@ const ProjectDetail = () => {
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-sm text-center">
               <p className="text-sm text-slate-500">
                 {project.status === 'purchasing' 
-                  ? 'El usuario de compras debe subir la Orden de Compra'
-                  : 'No se ha subido la Orden de Compra aún'
+                  ? 'El usuario de compras debe subir la Orden de Compra Materiales'
+                  : 'No se ha subido la Orden de Compra Materiales aún'
                 }
               </p>
             </div>
