@@ -61,6 +61,13 @@ Aplicación web multi-usuario para gestionar el ciclo de vida de proyectos de mu
 - Nueva sección "Listado de Materiales" (documento Excel) - visible para diseñadores
 - Todas las secciones visibles para todos los usuarios con permisos de carga apropiados
 
+### Gestión de Usuarios (Completado - Feb 26, 2026)
+- Panel de administración muestra lista de todos los usuarios
+- Botón para bloquear/activar usuarios (solo admin)
+- Usuarios bloqueados no pueden iniciar sesión
+- Protección: admin no puede bloquearse a sí mismo ni a otros admins
+- Campo `is_active` agregado al modelo de usuario
+
 ### Órdenes de Compra (Completado)
 - Crear órdenes de compra
 - Gestión de proveedores
