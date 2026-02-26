@@ -38,6 +38,8 @@ const ProjectDetail = () => {
   const [estimateDialogOpen, setEstimateDialogOpen] = useState(false);
   const [completingEarly, setCompletingEarly] = useState(false);
   const [earlyCompleteDialogOpen, setEarlyCompleteDialogOpen] = useState(false);
+  const [cutsFile, setCutsFile] = useState(null);
+  const [uploadingCuts, setUploadingCuts] = useState(false);
 
   useEffect(() => {
     fetchProjectData();
