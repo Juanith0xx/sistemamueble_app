@@ -931,16 +931,16 @@ const ProjectDetail = () => {
         </div>
       )}
 
-      {/* Documents */}
+      {/* Planos */}
       <div className="bg-white border border-slate-200 rounded-sm p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="text-xs font-mono uppercase tracking-widest text-slate-400">Documentos</div>
+            <div className="text-xs font-mono uppercase tracking-widest text-slate-400">Planos</div>
             <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-sm font-mono">
-              {documents.length}/10
+              {documents.filter(d => d.document_type === 'general').length}/10
             </span>
           </div>
-          {user?.role === 'designer' && documents.length < 10 && (
+          {user?.role === 'designer' && documents.filter(d => d.document_type === 'general').length < 10 && (
             <Dialog open={uploadDialogOpen} onOpenChange={(open) => {
               setUploadDialogOpen(open);
               if (!open) {
@@ -955,16 +955,16 @@ const ProjectDetail = () => {
                   className="rounded-sm px-4 h-9 text-xs font-bold uppercase tracking-wide"
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  Subir Documentos
+                  Subir Planos
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-lg bg-white">
                 <DialogHeader>
                   <DialogTitle className="font-heading text-xl uppercase tracking-tight">
-                    Subir Documentos
+                    Subir Planos
                   </DialogTitle>
                   <p className="text-xs text-slate-500 mt-1">
-                    Puedes subir hasta {10 - documents.length} archivos más
+                    Puedes subir hasta {10 - documents.filter(d => d.document_type === 'general').length} archivos más
                   </p>
                 </DialogHeader>
                 
