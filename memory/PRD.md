@@ -48,6 +48,12 @@ Aplicación web multi-usuario para gestionar el ciclo de vida de proyectos de mu
 - Gantt visual de simulación
 - Exportación PDF en formato horizontal con Gantt incluido
 - Aprobación para convertir en proyecto real
+- **Columna "Creado por" en lista de estudios (Feb 26, 2026)**
+
+### Listados con Creador (Completado - Feb 26, 2026)
+- Columna "Creado por" en lista de Proyectos
+- Columna "Creado por" en lista de Estudios
+- Backend retorna `created_by_name` en ambos endpoints
 
 ### Órdenes de Compra (Completado)
 - Crear órdenes de compra
