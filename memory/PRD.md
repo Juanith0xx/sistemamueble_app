@@ -68,10 +68,13 @@ Aplicación web multi-usuario para gestionar el ciclo de vida de proyectos de mu
 - Bodega: bodega@sistemamuebles.cl / test123
 
 ## Backlog / Tareas Futuras
-- [ ] Refactorizar server.py (1400+ líneas) en múltiples archivos
+- [ ] Refactorizar server.py (1700+ líneas) en múltiples routers
+- [ ] Refactorizar ProjectDetail.js (1000+ líneas) en componentes más pequeños
 - [ ] Seguridad SaaS (multi-tenencia, 2FA, rate limiting) - aplazado por usuario
 - [ ] Reactivar integración Google Drive (credenciales pendientes)
 - [ ] Reactivar notificaciones por email con Resend (API key pendiente)
+- [ ] Notificaciones por email al aprobar estudios
+- [ ] Vista Gantt consolidada para todos los proyectos activos
 
 ## Notas Técnicas
 - URL Preview: https://workflow-production.preview.emergentagent.com
