@@ -272,6 +272,42 @@ const ProjectDetail = () => {
     }
   };
 
+  // Verificar si existe el listado de cortes
+  const getCutsList = () => {
+    return documents.find(doc => doc.document_type === 'cuts_list');
+  };
+
+  // Subir listado de cortes
+  const handleUploadCutsList = async (file) => {
+    if (!file) return;
+    
+    const validExtensions = ['.xls', '.xlsx'];
+    const fileExt = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    if (!validExtensions.includes(fileExt)) {
+      toast.error('El listado de cortes debe ser un archivo Excel (.xls o .xlsx)');
+      return;
+    }
+
+    setUploadingCuts(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await axios.post(
+        `${API}/documents/upload-local?project_id=${id}&stage=${project.status}&document_type=cuts_list`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      toast.success('Listado de cortes subido exitosamente');
+      setCutsFile(null);
+      fetchProjectData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al subir listado de cortes');
+    } finally {
+      setUploadingCuts(false);
+    }
+  };
+
   // Verificar si existe la orden de compra
   const getPurchaseOrder = () => {
     return documents.find(doc => doc.document_type === 'purchase_order');
