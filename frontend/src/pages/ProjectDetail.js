@@ -1101,11 +1101,11 @@ const ProjectDetail = () => {
           )}
         </div>
 
-        {documents.length === 0 ? (
-          <p className="text-sm text-slate-500 text-center py-4">No hay documentos</p>
+        {documents.filter(d => d.document_type === 'general' || !d.document_type).length === 0 ? (
+          <p className="text-sm text-slate-500 text-center py-4">No hay planos</p>
         ) : (
           <div className="space-y-2">
-            {documents.map((doc) => (
+            {documents.filter(d => d.document_type === 'general' || !d.document_type).map((doc) => (
               <div
                 key={doc.document_id}
                 className="flex items-center justify-between p-3 rounded-sm border border-slate-200 hover:bg-slate-50 transition-colors"
@@ -1147,6 +1147,158 @@ const ProjectDetail = () => {
                 </Button>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Listado de Cortes */}
+      <div className="bg-white border border-slate-200 rounded-sm p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-purple-100 rounded-sm flex items-center justify-center">
+              <FileText className="w-4 h-4 text-purple-600" />
+            </div>
+            <div>
+              <div className="text-xs font-mono uppercase tracking-widest text-slate-400">Listado de Cortes</div>
+              <div className="text-xs text-slate-500">Documento Excel</div>
+            </div>
+          </div>
+        </div>
+
+        {getCutsList() ? (
+          <div className="flex items-center justify-between p-4 bg-purple-50 border border-purple-200 rounded-sm">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-purple-600" />
+              <div>
+                <div className="font-medium text-sm text-slate-900">{getCutsList().filename}</div>
+                <div className="text-xs text-slate-500">
+                  Subido el {new Date(getCutsList().created_at).toLocaleDateString('es-ES')}
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={() => handleDownloadFile(getCutsList().document_id, getCutsList().filename)}
+              variant="outline"
+              size="sm"
+              className="rounded-sm text-xs font-bold uppercase"
+            >
+              Descargar
+            </Button>
+          </div>
+        ) : user?.role === 'designer' ? (
+          <div className="space-y-3">
+            <div className="p-4 bg-purple-50 border border-purple-200 rounded-sm">
+              <p className="text-sm text-purple-800 mb-3">
+                Sube el listado de cortes (archivo Excel)
+              </p>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="file"
+                  accept=".xls,.xlsx"
+                  onChange={(e) => setCutsFile(e.target.files[0])}
+                  className="flex-1 h-9 text-sm"
+                />
+                <Button
+                  onClick={() => handleUploadCutsList(cutsFile)}
+                  disabled={!cutsFile || uploadingCuts}
+                  className="bg-purple-600 text-white hover:bg-purple-700 rounded-sm px-4 h-9 text-xs font-bold uppercase"
+                >
+                  {uploadingCuts ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Subiendo...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Subir Listado
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-sm text-center">
+            <p className="text-sm text-slate-500">
+              No se ha subido el listado de cortes aún
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Listado de Materiales - Section visible for all users */}
+      <div className="bg-white border border-slate-200 rounded-sm p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-amber-100 rounded-sm flex items-center justify-center">
+              <FileText className="w-4 h-4 text-amber-600" />
+            </div>
+            <div>
+              <div className="text-xs font-mono uppercase tracking-widest text-slate-400">Listado de Materiales</div>
+              <div className="text-xs text-slate-500">Documento Excel</div>
+            </div>
+          </div>
+        </div>
+
+        {getMaterialsList() ? (
+          <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-sm">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-amber-600" />
+              <div>
+                <div className="font-medium text-sm text-slate-900">{getMaterialsList().filename}</div>
+                <div className="text-xs text-slate-500">
+                  Subido el {new Date(getMaterialsList().created_at).toLocaleDateString('es-ES')}
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={() => handleDownloadFile(getMaterialsList().document_id, getMaterialsList().filename)}
+              variant="outline"
+              size="sm"
+              className="rounded-sm text-xs font-bold uppercase"
+            >
+              Descargar
+            </Button>
+          </div>
+        ) : user?.role === 'designer' ? (
+          <div className="space-y-3">
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-sm">
+              <p className="text-sm text-amber-800 mb-3">
+                Sube el listado de materiales (archivo Excel)
+              </p>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="file"
+                  accept=".xls,.xlsx"
+                  onChange={(e) => setMaterialsFile(e.target.files[0])}
+                  className="flex-1 h-9 text-sm"
+                />
+                <Button
+                  onClick={() => handleUploadMaterialsList(materialsFile)}
+                  disabled={!materialsFile || uploadingMaterials}
+                  className="bg-amber-600 text-white hover:bg-amber-700 rounded-sm px-4 h-9 text-xs font-bold uppercase"
+                >
+                  {uploadingMaterials ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Subiendo...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Subir Listado
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-sm text-center">
+            <p className="text-sm text-slate-500">
+              No se ha subido el listado de materiales aún
+            </p>
           </div>
         )}
       </div>
