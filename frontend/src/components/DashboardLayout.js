@@ -35,7 +35,7 @@ const DashboardLayout = () => {
 
   const menuItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['all'] },
-    { label: 'Estudios', path: '/studies', icon: FileText, roles: ['all'] },
+    { label: 'Estudios', path: '/studies', icon: FileText, roles: ['designer', 'manufacturing_chief', 'purchasing', 'superadmin'] },
     { label: 'Proyectos', path: '/projects', icon: FolderKanban, roles: ['all'] },
     { label: 'Gantt', path: '/gantt', icon: GanttChart, roles: ['all'] },
     { label: 'Ordenes de Compra', path: '/purchase-orders', icon: ShoppingCart, roles: ['purchasing', 'superadmin'] },
