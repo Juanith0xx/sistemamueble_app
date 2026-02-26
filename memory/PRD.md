@@ -55,6 +55,12 @@ Aplicación web multi-usuario para gestionar el ciclo de vida de proyectos de mu
 - Columna "Creado por" en lista de Estudios
 - Backend retorna `created_by_name` en ambos endpoints
 
+### Secciones de Documentos Reorganizadas (Completado - Feb 26, 2026)
+- Renombrado "Documentos" → "Planos" (para archivos PDF/Excel generales)
+- Nueva sección "Listado de Cortes" (documento Excel) - visible para diseñadores
+- Nueva sección "Listado de Materiales" (documento Excel) - visible para diseñadores
+- Todas las secciones visibles para todos los usuarios con permisos de carga apropiados
+
 ### Órdenes de Compra (Completado)
 - Crear órdenes de compra
 - Gestión de proveedores
