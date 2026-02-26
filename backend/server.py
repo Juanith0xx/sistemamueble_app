@@ -977,7 +977,7 @@ async def create_study(study_input: ProjectStudyCreate, user: User = Depends(get
     
     return ProjectStudy(**study_doc)
 
-@api_router.get("/studies", response_model=List[ProjectStudy])
+@api_router.get("/studies")
 async def get_studies(user: User = Depends(get_current_user)):
     # All users can see all studies to enable collaboration
     # Each role can edit only their allowed stages
