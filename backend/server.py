@@ -489,7 +489,7 @@ async def advance_project_stage(project_id: str, user: User = Depends(get_curren
         if not purchase_order:
             raise HTTPException(
                 status_code=400, 
-                detail="Debe subir la Orden de Compra (OC) antes de avanzar a la siguiente etapa"
+                detail="Debe subir la Orden de Compra Materiales antes de avanzar a la siguiente etapa"
             )
     
     # Verificar si se confirmó recepción de materiales antes de avanzar desde bodega
